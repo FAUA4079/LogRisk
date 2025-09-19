@@ -1,0 +1,322 @@
+[
+  {
+    "id": 1,
+    "name": "System Startup",
+    "pattern": "6005",
+    "weight": 3,
+    "category": "System",
+    "suggested_treatment": "Track normal system startup events"
+  },
+  {
+    "id": 2,
+    "name": "System Shutdown",
+    "pattern": "6006",
+    "weight": 5,
+    "category": "System",
+    "suggested_treatment": "Verify if shutdown was authorized"
+  },
+  {
+    "id": 3,
+    "name": "Unexpected Shutdown",
+    "pattern": "6008",
+    "weight": 7,
+    "category": "System",
+    "suggested_treatment": "Investigate cause of unexpected shutdown"
+  },
+  {
+    "id": 4,
+    "name": "Driver Loaded",
+    "pattern": "7045",
+    "weight": 6,
+    "category": "System",
+    "suggested_treatment": "Check if driver installation is authorized"
+  },
+  {
+    "id": 5,
+    "name": "Service Installed",
+    "pattern": "7045",
+    "weight": 6,
+    "category": "System",
+    "suggested_treatment": "Verify newly installed services are legitimate"
+  },
+  {
+    "id": 6,
+    "name": "Service Deleted",
+    "pattern": "7035",
+    "weight": 6,
+    "category": "System",
+    "suggested_treatment": "Ensure service deletion is authorized"
+  },
+  {
+    "id": 7,
+    "name": "Service Started",
+    "pattern": "7036",
+    "weight": 5,
+    "category": "System",
+    "suggested_treatment": "Monitor services starting unexpectedly"
+  },
+  {
+    "id": 8,
+    "name": "Service Stopped",
+    "pattern": "7036",
+    "weight": 5,
+    "category": "System",
+    "suggested_treatment": "Check if service stop is authorized"
+  },
+  {
+    "id": 9,
+    "name": "System Time Changed",
+    "pattern": "4616",
+    "weight": 6,
+    "category": "System",
+    "suggested_treatment": "Verify if time change is authorized"
+  },
+  {
+    "id": 10,
+    "name": "Driver Installation Failed",
+    "pattern": "7000",
+    "weight": 7,
+    "category": "System",
+    "suggested_treatment": "Check the reason for driver failure"
+  },
+  {
+    "id": 11,
+    "name": "Device Connected",
+    "pattern": "20001",
+    "weight": 6,
+    "category": "Hardware",
+    "suggested_treatment": "Verify if new devices are authorized"
+  },
+  {
+    "id": 12,
+    "name": "Device Removed",
+    "pattern": "21000",
+    "weight": 5,
+    "category": "Hardware",
+    "suggested_treatment": "Ensure device removal is legitimate"
+  },
+  {
+    "id": 13,
+    "name": "Disk Error",
+    "pattern": "7",
+    "weight": 8,
+    "category": "System",
+    "suggested_treatment": "Check disk health and system stability"
+  },
+  {
+    "id": 14,
+    "name": "Disk Full Warning",
+    "pattern": "55",
+    "weight": 6,
+    "category": "System",
+    "suggested_treatment": "Clean disk space and monitor storage"
+  },
+  {
+    "id": 15,
+    "name": "Kernel Event Warning",
+    "pattern": "41",
+    "weight": 7,
+    "category": "System",
+    "suggested_treatment": "Investigate unexpected kernel events"
+  },
+  {
+    "id": 16,
+    "name": "Critical System Error",
+    "pattern": "1001",
+    "weight": 8,
+    "category": "System",
+    "suggested_treatment": "Check for system crashes or instability"
+  },
+  {
+    "id": 17,
+    "name": "Windows Update Installed",
+    "pattern": "19",
+    "weight": 5,
+    "category": "System",
+    "suggested_treatment": "Monitor for successful system updates"
+  },
+  {
+    "id": 18,
+    "name": "Windows Update Failed",
+    "pattern": "20",
+    "weight": 6,
+    "category": "System",
+    "suggested_treatment": "Investigate failed updates for security risks"
+  },
+  {
+    "id": 19,
+    "name": "Unexpected Service Restart",
+    "pattern": "7036",
+    "weight": 6,
+    "category": "System",
+    "suggested_treatment": "Check if service restart is authorized"
+  },
+  {
+    "id": 20,
+    "name": "Critical Device Failure",
+    "pattern": "55",
+    "weight": 8,
+    "category": "Hardware",
+    "suggested_treatment": "Investigate hardware issues immediately"
+  },
+  {
+    "id": 21,
+    "name": "Event Log Cleared",
+    "pattern": "104",
+    "weight": 9,
+    "category": "System",
+    "suggested_treatment": "Investigate log clearing for malicious activity"
+  },
+  {
+    "id": 22,
+    "name": "System Crash",
+    "pattern": "1000",
+    "weight": 8,
+    "category": "System",
+    "suggested_treatment": "Analyze crash details and fix underlying issue"
+  },
+  {
+    "id": 23,
+    "name": "Unexpected Power Loss",
+    "pattern": "41",
+    "weight": 7,
+    "category": "System",
+    "suggested_treatment": "Verify power failure source and system safety"
+  },
+  {
+    "id": 24,
+    "name": "Configuration Change",
+    "pattern": "4739",
+    "weight": 6,
+    "category": "System",
+    "suggested_treatment": "Check if system configuration change is authorized"
+  },
+  {
+    "id": 25,
+    "name": "Security Policy Changed",
+    "pattern": "4739",
+    "weight": 7,
+    "category": "System",
+    "suggested_treatment": "Verify changes in security policies"
+  },
+  {
+    "id": 26,
+    "name": "Audit Policy Change",
+    "pattern": "4719",
+    "weight": 7,
+    "category": "System",
+    "suggested_treatment": "Ensure audit policy changes are authorized"
+  },
+  {
+    "id": 27,
+    "name": "Group Policy Change",
+    "pattern": "4739",
+    "weight": 6,
+    "category": "System",
+    "suggested_treatment": "Check if Group Policy modifications are authorized"
+  },
+  {
+    "id": 28,
+    "name": "Driver Signed Check",
+    "pattern": "7045",
+    "weight": 6,
+    "category": "System",
+    "suggested_treatment": "Ensure drivers are properly signed"
+  },
+  {
+    "id": 29,
+    "name": "Event Log Write Failure",
+    "pattern": "1105",
+    "weight": 7,
+    "category": "System",
+    "suggested_treatment": "Check reasons for failure to write to log"
+  },
+  {
+    "id": 30,
+    "name": "Failed Hardware Initialization",
+    "pattern": "7001",
+    "weight": 7,
+    "category": "Hardware",
+    "suggested_treatment": "Investigate hardware issues at startup"
+  },
+  {
+    "id": 31,
+    "name": "Service Configuration Change",
+    "pattern": "7040",
+    "weight": 6,
+    "category": "System",
+    "suggested_treatment": "Verify changes to service configuration"
+  },
+  {
+    "id": 32,
+    "name": "Unexpected Software Installation",
+    "pattern": "11707",
+    "weight": 6,
+    "category": "System",
+    "suggested_treatment": "Ensure software installation is authorized"
+  },
+  {
+    "id": 33,
+    "name": "System File Corruption",
+    "pattern": "1001",
+    "weight": 8,
+    "category": "System",
+    "suggested_treatment": "Investigate and repair corrupted system files"
+  },
+  {
+    "id": 34,
+    "name": "Critical Security Service Stopped",
+    "pattern": "7036",
+    "weight": 8,
+    "category": "System",
+    "suggested_treatment": "Restart service and investigate why it stopped"
+  },
+  {
+    "id": 35,
+    "name": "Windows Defender Disabled",
+    "pattern": "5001",
+    "weight": 9,
+    "category": "System",
+    "suggested_treatment": "Enable Windows Defender immediately"
+  },
+  {
+    "id": 36,
+    "name": "Driver Signing Enforcement Disabled",
+    "pattern": "7045",
+    "weight": 8,
+    "category": "System",
+    "suggested_treatment": "Ensure driver signing enforcement is enabled"
+  },
+  {
+    "id": 37,
+    "name": "Disk Error Detected",
+    "pattern": "7",
+    "weight": 7,
+    "category": "System",
+    "suggested_treatment": "Investigate disk errors and backup data"
+  },
+  {
+    "id": 38,
+    "name": "Critical Device Error",
+    "pattern": "55",
+    "weight": 8,
+    "category": "Hardware",
+    "suggested_treatment": "Check and replace faulty hardware"
+  },
+  {
+    "id": 39,
+    "name": "Unexpected Software Removal",
+    "pattern": "1035",
+    "weight": 6,
+    "category": "System",
+    "suggested_treatment": "Verify software removal is authorized"
+  },
+  {
+    "id": 40,
+    "name": "System Configuration Backup",
+    "pattern": "backup",
+    "weight": 4,
+    "category": "System",
+    "suggested_treatment": "Ensure backup completed successfully"
+  }
+]
