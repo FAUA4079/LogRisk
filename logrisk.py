@@ -1,292 +1,131 @@
 #!/usr/bin/env python3
-# logrisk - complete OS Log Risk Analysis CLI
-# Save as 'logrisk', chmod +x logrisk
-# Python 3.8+
 
-import argparse, json, os, re, sys
-from collections import defaultdict, Counter
+import os
+import json
+import argparse
+import re
 from datetime import datetime
+import shutil
 
-# ----------------- Defaults -----------------
-DEFAULT_CONFIG = "declared_risks.json"
-PERSIST_DATA = "oslog_declared_data.json"
-DEFAULT_JSON_REPORT = "predicted_risks.json"
+# -------------------------
+# Helper Functions
+# -------------------------
 
-CATEGORY_REMEDIATION = {
-    "authentication": [
-        "Review auth logs for this entity and related IPs.",
-        "Enforce MFA and consider password resets if compromise suspected.",
-        "Throttle or block repeated failed login IPs (fail2ban/iptables)."
-    ],
-    "privilege-escalation": [
-        "Isolate host for forensic capture, preserve logs, collect snapshots.",
-        "Rotate privileged credentials and revoke unauthorized keys."
-    ],
-    "authorization": [
-        "Audit sudoers and recent privilege changes; apply least-privilege."
-    ],
-    "persistence": [
-        "Audit cron/systemd timers and startup scripts; remove unexpected binaries."
-    ],
-    "network": [
-        "Block or rate-limit suspicious IPs at firewall; check for lateral movement."
-    ],
-    "default": [
-        "Investigate raw lines and correlate with other logs; tune rules to reduce noise."
-    ]
-}
+def load_risk_rules(file_path):
+    with open(file_path, 'r') as f:
+        rules = json.load(f)
+    return rules
 
-# ----------------- Helpers -----------------
-def banner():
-    print("=== LogRisk CLI ===")
-    print("Scan OS logs using declared risk rules, produce predicted_risks.json and a text report.")
-    print("Usage example: logrisk -L /var/log/auth.log -O report.txt -C declared_risks.json\n")
+def create_results_folder():
+    base_folder = "Results_output"
+    if not os.path.exists(base_folder):
+        os.mkdir(base_folder)
+    timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+    run_folder = os.path.join(base_folder, timestamp)
+    os.mkdir(run_folder)
+    return run_folder
 
-def load_config(path):
-    if not os.path.exists(path):
-        raise FileNotFoundError(f"Risk config not found: {path}")
-    with open(path, "r", encoding="utf-8") as f:
-        cfg = json.load(f)
-    for idx, r in enumerate(cfg):
-        patt = r.get("pattern", "")
-        r["_compiled"] = re.compile(patt, re.IGNORECASE)
-        r.setdefault("id", f"R{idx+1:03d}")
-        r.setdefault("name", r.get("id"))
-        r.setdefault("weight", 1)
-        r.setdefault("suggested_treatment", "")
-        r.setdefault("category", "default")
-    return cfg
+def predict_risk_level(weight):
+    if weight >= 7:
+        return "High"
+    elif weight >= 4:
+        return "Medium"
+    else:
+        return "Low"
 
-def load_persist():
-    if os.path.exists(PERSIST_DATA):
-        with open(PERSIST_DATA, "r", encoding="utf-8") as f:
-            return json.load(f)
-    return {"events": [], "meta": {}}
-
-def save_persist(d):
-    with open(PERSIST_DATA, "w", encoding="utf-8") as f:
-        json.dump(d, f, indent=2, ensure_ascii=False)
-
-def scan_log(path, cfg, verbose=False):
-    if not os.path.exists(path):
-        raise FileNotFoundError(f"Log file not found: {path}")
-    data = load_persist()
-    events = data.get("events", [])
-    matches = 0
-    with open(path, "r", encoding="utf-8", errors="ignore") as fh:
-        for ln in fh:
-            line = ln.rstrip("\n")
-            for rule in cfg:
-                m = rule["_compiled"].search(line)
-                if not m:
-                    continue
-                gd = m.groupdict() if m.groupdict() else {}
-                event = {
-                    "detected_at": datetime.utcnow().isoformat() + "Z",
-                    "rule_id": rule["id"],
-                    "rule_name": rule["name"],
-                    "raw": line,
-                    "user": gd.get("user","") or "",
-                    "ip": gd.get("ip","") or "",
-                    "service": gd.get("service","") or "",
-                    "weight": int(rule.get("weight",1)),
-                    "category": rule.get("category","default"),
-                    "suggested_treatment": rule.get("suggested_treatment","")
+def scan_log(log_file, rules, verbose=False):
+    matches = []
+    with open(log_file, 'r') as f:
+        lines = f.readlines()
+    for i, line in enumerate(lines):
+        for rule in rules:
+            if re.search(rule['pattern'], line):
+                risk_info = {
+                    "line_no": i+1,
+                    "line_content": line.strip(),
+                    "id": rule['id'],
+                    "risk": rule['name'],
+                    "weight": rule['weight'],
+                    "level": predict_risk_level(rule['weight']),
+                    "suggested_fix": rule['suggested_treatment'],
+                    "category": rule['category']
                 }
-                events.append(event)
-                matches += 1
+                matches.append(risk_info)
                 if verbose:
-                    print(f"[MATCH] {rule['id']} user={event['user']} ip={event['ip']}  line={line[:140]}")
-                # allow multiple rule matches per line
-    data["events"] = events
-    data["meta"]["last_scan"] = datetime.utcnow().isoformat() + "Z"
-    save_persist(data)
+                    print(f"[{risk_info['level']}] {risk_info['risk']} - line {i+1}")
     return matches
 
-def analyze_events(verbose=False):
-    data = load_persist()
-    events = data.get("events", [])
-    if not events:
-        return None
-    by_ip = defaultdict(list)
-    by_user = defaultdict(list)
-    for e in events:
-        ip = e.get("ip") or "unknown"
-        user = e.get("user") or "unknown"
-        by_ip[ip].append(e)
-        by_user[user].append(e)
-    def compute(evs):
-        total = sum(int(e.get("weight",1)) for e in evs)
-        rule_counts = Counter(e["rule_id"] for e in evs)
-        rule_names = Counter(e["rule_name"] for e in evs)
-        categories = Counter(e.get("category","default") for e in evs)
-        return int(total), dict(rule_counts), dict(rule_names), dict(categories)
-    ip_scores = { ip: {"score": compute(evs)[0], "rule_counts": compute(evs)[1], "rule_names": compute(evs)[2], "categories": compute(evs)[3], "events": len(evs)} for ip,evs in by_ip.items() }
-    user_scores = { u: {"score": compute(evs)[0], "rule_counts": compute(evs)[1], "rule_names": compute(evs)[2], "categories": compute(evs)[3], "events": len(evs)} for u,evs in by_user.items() }
-    analysis = {"by_ip": ip_scores, "by_user": user_scores, "generated_at": datetime.utcnow().isoformat() + "Z"}
-    data["analysis"] = analysis
-    save_persist(data)
-    if verbose:
-        print(f"[ANALYSIS] IPs={len(ip_scores)} users={len(user_scores)} events_total={len(events)}")
-    return analysis
+def save_reports(matches, output_name, run_folder, log_file, json_report=False):
+    # Save main text report
+    text_report_path = os.path.join(run_folder, output_name)
+    with open(text_report_path, "w") as f:
+        for m in matches:
+            f.write(f"Risk: {m['risk']}\n")
+            f.write(f"Level: {m['level']}\n")
+            f.write(f"Fix: {m['suggested_fix']}\n")
+            f.write(f"Log Line: {m['line_content']}\n")
+            f.write("-"*40 + "\n")
+    
+    # Save JSON report if enabled
+    if json_report:
+        json_path = os.path.join(run_folder, "predicted_risks.json")
+        with open(json_path, "w") as f:
+            json.dump(matches, f, indent=4)
+    
+    # Copy scanned log file
+    scanned_log_path = os.path.join(run_folder, os.path.basename(log_file))
+    shutil.copy(log_file, scanned_log_path)
 
-def level_from_score(score):
-    if score <= 4: return "Low"
-    if score <= 10: return "Medium"
-    return "High"
+    # Save separate log files for each risk type
+    risk_folders = {}
+    for m in matches:
+        risk_folder_name = f"{m['id']}_{m['risk'].replace(' ', '_')}"
+        risk_folder_path = os.path.join(run_folder, risk_folder_name)
+        if not os.path.exists(risk_folder_path):
+            os.mkdir(risk_folder_path)
+        # Save the log line into a separate file
+        risk_log_path = os.path.join(risk_folder_path, "log.txt")
+        with open(risk_log_path, "a") as f:
+            f.write(f"Line {m['line_no']}: {m['line_content']}\n")
 
-def build_remediation(rule_ids, cfg):
-    combined = []
-    categories_seen = set()
-    rule_map = {r["id"]: r for r in cfg}
-    for rid in rule_ids:
-        r = rule_map.get(rid)
-        if not r: continue
-        st = r.get("suggested_treatment","")
-        if st and st not in combined: combined.append(st)
-        categories_seen.add(r.get("category","default"))
-    for cat in categories_seen:
-        for step in CATEGORY_REMEDIATION.get(cat, CATEGORY_REMEDIATION["default"]):
-            if step not in combined:
-                combined.append(step)
-    final = "Document findings for audit and tune declared rules to reduce false positives."
-    if final not in combined: combined.append(final)
-    return combined
+    print(f"\nAll outputs saved in folder: {run_folder}")
+    print(f"Text report: {text_report_path}")
+    if json_report:
+        print(f"JSON report: {json_path}")
+    print(f"Scanned log file copied: {scanned_log_path}")
+    print(f"Separate log files for each risk saved in respective folders.")
 
-def generate_json_report(analysis, cfg, outpath=DEFAULT_JSON_REPORT):
-    report = {"generated_at": datetime.utcnow().isoformat() + "Z", "entities": {"by_ip": {}, "by_user": {}}, "meta": {"source": PERSIST_DATA}}
-    for ip, info in analysis.get("by_ip", {}).items():
-        score = info.get("score", 0)
-        level = level_from_score(score)
-        remediation = build_remediation(list(info.get("rule_counts", {}).keys()), cfg)
-        report["entities"]["by_ip"][ip] = {
-            "score": score, "level": level, "events": info.get("events",0),
-            "rule_counts": info.get("rule_counts",{}), "rule_names": info.get("rule_names",{}),
-            "categories": info.get("categories",{}), "remediation": remediation,
-            "suggested_actions": [
-                f"Block/throttle IP {ip} at firewall if level is High.",
-                f"Search prior logs for {ip} across systems for correlation."
-            ] if level=="High" else [f"Monitor IP {ip} and escalate if events increase."]
-        }
-    for u, info in analysis.get("by_user", {}).items():
-        score = info.get("score", 0)
-        level = level_from_score(score)
-        remediation = build_remediation(list(info.get("rule_counts", {}).keys()), cfg)
-        report["entities"]["by_user"][u] = {
-            "score": score, "level": level, "events": info.get("events",0),
-            "rule_counts": info.get("rule_counts",{}), "rule_names": info.get("rule_names",{}),
-            "categories": info.get("categories",{}), "remediation": remediation,
-            "suggested_actions": [
-                f"Force password reset for user {u} if level is High.",
-                f"Review recent sessions and sudo activity for user {u}."
-            ] if level=="High" else [f"Notify user {u} and monitor for repeat events."]
-        }
-    with open(outpath, "w", encoding="utf-8") as f:
-        json.dump(report, f, indent=2, ensure_ascii=False)
-    return outpath
+# -------------------------
+# Main
+# -------------------------
 
-def write_text_report(json_report_path, text_out_path):
-    with open(json_report_path, "r", encoding="utf-8") as f:
-        rep = json.load(f)
-    lines = []
-    lines.append("=== LogRisk Predicted Risks Report ===")
-    lines.append(f"Generated at: {rep.get('generated_at')}")
-    lines.append("")
-    by_ip = rep.get("entities", {}).get("by_ip", {})
-    by_user = rep.get("entities", {}).get("by_user", {})
-    lines.append("== Top IPs ==")
-    if not by_ip:
-        lines.append("No IP entries found.")
-    else:
-        for ip, info in sorted(by_ip.items(), key=lambda kv: kv[1]["score"], reverse=True)[:50]:
-            lines.append(f"IP: {ip}")
-            lines.append(f"  Score: {info['score']}  Level: {info['level']}  Events: {info['events']}")
-            lines.append(f"  Rule counts: {info.get('rule_counts')}")
-            lines.append("  Remediation:")
-            for r in info.get("remediation", []):
-                lines.append(f"    - {r}")
-            lines.append("  Suggested actions:")
-            for a in info.get("suggested_actions", []):
-                lines.append(f"    - {a}")
-            lines.append("")
-    lines.append("== Top Users ==")
-    if not by_user:
-        lines.append("No user entries found.")
-    else:
-        for u, info in sorted(by_user.items(), key=lambda kv: kv[1]["score"], reverse=True)[:50]:
-            lines.append(f"User: {u}")
-            lines.append(f"  Score: {info['score']}  Level: {info['level']}  Events: {info['events']}")
-            lines.append(f"  Rule counts: {info.get('rule_counts')}")
-            lines.append("  Remediation:")
-            for r in info.get("remediation", []):
-                lines.append(f"    - {r}")
-            lines.append("  Suggested actions:")
-            for a in info.get("suggested_actions", []):
-                lines.append(f"    - {a}")
-            lines.append("")
-    with open(text_out_path, "w", encoding="utf-8") as f:
-        f.write("\n".join(lines))
-    return text_out_path
-
-# ----------------- CLI -----------------
 def main():
-    parser = argparse.ArgumentParser(prog="logrisk", description="OS Log Risk Analysis Tool")
-    parser.add_argument("-L", "--logfile", required=False, help="Path to the log file to analyze")
-    parser.add_argument("-O", "--output", default="risk_report.txt", help="Human-readable output report path")
-    parser.add_argument("-C", "--config", default=DEFAULT_CONFIG, help="Declared risks JSON config (default: declared_risks.json)")
-    parser.add_argument("--json-report", default=DEFAULT_JSON_REPORT, help="Machine JSON report output (default: predicted_risks.json)")
-    parser.add_argument("--skip-scan", action="store_true", help="Skip scanning (use existing persisted data)")
-    parser.add_argument("-v", "--verbose", action="store_true", help="Verbose output")
+    parser = argparse.ArgumentParser(description="LogSentinel - OS Log Risk Analysis Tool")
+    parser.add_argument("-L", "--logfile", required=True, help="Path to log file to scan")
+    parser.add_argument("-O", "--output", default="report.txt", help="Name of text report file")
+    parser.add_argument("--json-report", action="store_true", help="Generate JSON report")
+    parser.add_argument("-v", "--verbose", action="store_true", help="Verbose output in console")
+    parser.add_argument("-R", "--rules", default="declared_risks.json", help="Path to risk rules JSON")
     args = parser.parse_args()
 
-    # If user ran without args (just 'logrisk'), show banner + help
-    if len(sys.argv) == 1:
-        banner()
-        parser.print_help()
+    if not os.path.exists(args.logfile):
+        print("Error: Log file does not exist!")
+        return
+    if not os.path.exists(args.rules):
+        print("Error: Risk rules file does not exist!")
         return
 
-    if not args.logfile and not args.skip_scan:
-        print("[!] When not using --skip-scan you must provide -L / --logfile")
-        return
+    # Load rules
+    rules = load_risk_rules(args.rules)
 
-    try:
-        cfg = load_config(args.config)
-    except Exception as e:
-        print(f"[!] ERROR loading config: {e}")
-        return
+    # Scan logs
+    matches = scan_log(args.logfile, rules, verbose=args.verbose)
 
-    try:
-        if not args.skip_scan:
-            if args.verbose: print("[*] Scanning log file for declared risk patterns...")
-            matches = scan_log(args.logfile, cfg, verbose=args.verbose)
-            print(f"[+] Scan complete — matched events: {matches}")
-        else:
-            if args.verbose: print("[*] Using existing persisted events (skip scan).")
-        if args.verbose: print("[*] Analyzing events and computing scores...")
-        analysis = analyze_events(verbose=args.verbose)
-        if not analysis:
-            print("[!] No events found. Exiting.")
-            return
-        print("[+] Analysis complete.")
-        if args.verbose: print("[*] Generating JSON report...")
-        json_path = generate_json_report(analysis, cfg, outpath=args.json_report)
-        print(f"[+] JSON report saved to: {json_path}")
-        if args.verbose: print("[*] Writing human-readable report...")
-        text_path = write_text_report(json_path, args.output)
-        print(f"[+] Text report saved to: {text_path}")
-        # short terminal summary
-        print("\n=== Executive Summary (top 5 by IP) ===")
-        by_ip = analysis.get("by_ip", {})
-        top_ips = sorted(by_ip.items(), key=lambda kv: kv[1]["score"], reverse=True)[:5]
-        if not top_ips:
-            print("No IPs detected.")
-        else:
-            for ip, info in top_ips:
-                lvl = level_from_score(info.get("score", 0))
-                print(f"- {ip}: score={info['score']} level={lvl} events={info.get('events')}")
-        print("\nDone. Review the report and remediation steps.")
-    except Exception as exc:
-        print(f"[!] Unexpected error: {exc}")
+    # Create results folder
+    run_folder = create_results_folder()
+
+    # Save reports and separate risk logs
+    save_reports(matches, args.output, run_folder, args.logfile, json_report=args.json_report)
 
 if __name__ == "__main__":
     main()
