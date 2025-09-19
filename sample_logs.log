@@ -1,0 +1,38 @@
+Sep 19 08:15:01 kali sshd[1245]: Failed password for root from 192.168.1.50 port 51234 ssh2
+Sep 19 08:15:05 kali sshd[1245]: Failed password for root from 192.168.1.50 port 51235 ssh2
+Sep 19 08:15:08 kali sshd[1245]: Failed password for root from 192.168.1.50 port 51236 ssh2
+Sep 19 08:16:00 kali sshd[1245]: Accepted password for user1 from 10.0.0.25 port 60211 ssh2
+Sep 19 08:16:10 kali sshd[1245]: Accepted password for root from 10.0.0.50 port 60212 ssh2
+Sep 19 08:17:01 kali sudo: user1 : TTY=pts/0 ; PWD=/home/user1 ; USER=root ; COMMAND=/bin/ls
+Sep 19 08:18:15 kali sudo: user2 : authentication failure ; TTY=pts/1 ; PWD=/home/user2 ; USER=root ; COMMAND=/bin/cat
+Sep 19 08:20:22 kali CRON[4321]: (root) CMD (/usr/bin/backup.sh)
+Sep 19 08:21:05 kali CRON[4322]: (user1) CMD (/home/user1/cleanup.sh)
+Sep 19 08:25:10 kali passwd[2345]: password changed for user1
+Sep 19 08:30:30 kali sshd[1245]: Connection closed by 10.0.0.25 port 60211
+Sep 19 08:32:01 kali apt-get[5432]: apt-get install htop
+Sep 19 08:35:02 kali dpkg: removed package nano
+Sep 19 08:36:45 kali kernel: kernel panic - not syncing: Fatal exception
+Sep 19 08:38:20 kali sshd[1245]: Accepted password for user3 from 203.0.113.55 port 62222 ssh2
+Sep 19 08:40:01 kali sshd[1245]: Failed password for invalid user test from 198.51.100.20 port 51234
+Sep 19 08:42:22 kali PAM[6789]: PAM authentication failure for user2
+Sep 19 08:45:11 kali sshd[1245]: Accepted password for user4 from 172.16.0.45 port 60000 ssh2
+Sep 19 08:47:33 kali sudo: user1 : command not allowed ; TTY=pts/0 ; PWD=/home/user1 ; USER=root ; COMMAND=/bin/rm
+Sep 19 08:50:10 kali sshd[1245]: Accepted password for user5 from 192.0.2.100 port 60211 ssh2
+Sep 19 08:52:01 kali sshd[1245]: Connection closed by 192.0.2.100 port 60211
+Sep 19 08:55:00 kali systemd[1]: Stopped apache2.service
+Sep 19 08:57:12 kali systemd[1]: Started nginx.service
+Sep 19 09:00:00 kali CRON[4323]: (root) CMD (/usr/bin/update.sh)
+Sep 19 09:05:45 kali kernel: clock change detected
+Sep 19 09:10:11 kali sshd[1245]: Accepted password for user6 from 10.0.0.99 port 62345 ssh2
+Sep 19 09:12:30 kali sshd[1245]: Failed password for root from 203.0.113.25 port 52222 ssh2
+Sep 19 09:15:55 kali sshd[1245]: Accepted password for user7 from 198.51.100.10 port 60001 ssh2
+Sep 19 09:18:22 kali sshd[1245]: Accepted password for root from 10.0.0.50 port 60213 ssh2
+Sep 19 09:20:05 kali sshd[1245]: Failed password for invalid user guest from 203.0.113.70 port 50222
+Sep 19 09:25:12 kali dpkg: removed package vim
+Sep 19 09:30:00 kali sshd[1245]: Accepted password for user8 from 203.0.113.88 port 61234 ssh2
+Sep 19 09:35:15 kali PAM[6789]: PAM authentication failure for user3
+Sep 19 09:40:22 kali CRON[4324]: (user2) CMD (/home/user2/cleanup.sh)
+Sep 19 09:42:11 kali sshd[1245]: Accepted password for user9 from 198.51.100.33 port 62222 ssh2
+Sep 19 09:45:00 kali kernel: kernel panic - not syncing: Fatal exception
+Sep 19 09:50:12 kali sshd[1245]: Failed password for root from 192.0.2.55 port 60234 ssh2
+Sep 19 09:55:33 kali sshd[1245]: Accepted password for user10 from 203.0.113.101 port 60222 ssh2
