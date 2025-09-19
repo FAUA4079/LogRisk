@@ -1,0 +1,322 @@
+[
+  {
+    "id": 1,
+    "name": "Failed Logon Attempt",
+    "pattern": "4625",
+    "weight": 8,
+    "category": "Authentication",
+    "suggested_treatment": "Investigate the source IP and username; consider locking the account or blocking IP"
+  },
+  {
+    "id": 2,
+    "name": "Successful Logon with Admin Privileges",
+    "pattern": "4672",
+    "weight": 7,
+    "category": "Authentication",
+    "suggested_treatment": "Verify if admin logon is authorized"
+  },
+  {
+    "id": 3,
+    "name": "Account Locked Out",
+    "pattern": "4740",
+    "weight": 6,
+    "category": "Account",
+    "suggested_treatment": "Check if account lockout is expected or due to malicious activity"
+  },
+  {
+    "id": 4,
+    "name": "User Account Created",
+    "pattern": "4720",
+    "weight": 6,
+    "category": "Account",
+    "suggested_treatment": "Verify if the new account creation is authorized"
+  },
+  {
+    "id": 5,
+    "name": "User Account Deleted",
+    "pattern": "4726",
+    "weight": 7,
+    "category": "Account",
+    "suggested_treatment": "Check if account deletion is authorized"
+  },
+  {
+    "id": 6,
+    "name": "Group Membership Added",
+    "pattern": "4732",
+    "weight": 6,
+    "category": "Privilege",
+    "suggested_treatment": "Verify changes in group membership are authorized"
+  },
+  {
+    "id": 7,
+    "name": "Group Membership Removed",
+    "pattern": "4733",
+    "weight": 6,
+    "category": "Privilege",
+    "suggested_treatment": "Ensure removal from group is authorized"
+  },
+  {
+    "id": 8,
+    "name": "User Right Assigned",
+    "pattern": "4707",
+    "weight": 7,
+    "category": "Privilege",
+    "suggested_treatment": "Verify user rights assignment is valid"
+  },
+  {
+    "id": 9,
+    "name": "User Right Removed",
+    "pattern": "4706",
+    "weight": 7,
+    "category": "Privilege",
+    "suggested_treatment": "Check removal of user rights for authorization"
+  },
+  {
+    "id": 10,
+    "name": "Object Access Attempt Failed",
+    "pattern": "4663",
+    "weight": 6,
+    "category": "File Access",
+    "suggested_treatment": "Check failed file access and permissions"
+  },
+  {
+    "id": 11,
+    "name": "Object Access Attempt Succeeded",
+    "pattern": "4663",
+    "weight": 5,
+    "category": "File Access",
+    "suggested_treatment": "Monitor access for sensitive files"
+  },
+  {
+    "id": 12,
+    "name": "Audit Policy Change",
+    "pattern": "4719",
+    "weight": 8,
+    "category": "System",
+    "suggested_treatment": "Verify audit policy changes are authorized"
+  },
+  {
+    "id": 13,
+    "name": "Security System Shutdown",
+    "pattern": "4608",
+    "weight": 9,
+    "category": "System",
+    "suggested_treatment": "Investigate unexpected shutdowns"
+  },
+  {
+    "id": 14,
+    "name": "Log Cleared",
+    "pattern": "1102",
+    "weight": 10,
+    "category": "System",
+    "suggested_treatment": "Investigate clearing of security logs"
+  },
+  {
+    "id": 15,
+    "name": "Service Installed",
+    "pattern": "7045",
+    "weight": 7,
+    "category": "System",
+    "suggested_treatment": "Verify if service installation is authorized"
+  },
+  {
+    "id": 16,
+    "name": "Service Deleted",
+    "pattern": "7035",
+    "weight": 7,
+    "category": "System",
+    "suggested_treatment": "Verify if service deletion is authorized"
+  },
+  {
+    "id": 17,
+    "name": "Privilege Use Attempted",
+    "pattern": "4673",
+    "weight": 8,
+    "category": "Privilege",
+    "suggested_treatment": "Check if privilege use is legitimate"
+  },
+  {
+    "id": 18,
+    "name": "Special Privilege Assigned to Account",
+    "pattern": "4674",
+    "weight": 8,
+    "category": "Privilege",
+    "suggested_treatment": "Investigate assignment of special privileges"
+  },
+  {
+    "id": 19,
+    "name": "Logon Session Created",
+    "pattern": "4624",
+    "weight": 5,
+    "category": "Authentication",
+    "suggested_treatment": "Track login sessions for auditing"
+  },
+  {
+    "id": 20,
+    "name": "Logon Session Terminated",
+    "pattern": "4634",
+    "weight": 4,
+    "category": "Authentication",
+    "suggested_treatment": "Monitor logoff events for unusual patterns"
+  },
+  {
+    "id": 21,
+    "name": "Account Password Changed",
+    "pattern": "4723",
+    "weight": 6,
+    "category": "Authentication",
+    "suggested_treatment": "Verify password changes are authorized"
+  },
+  {
+    "id": 22,
+    "name": "Account Password Reset",
+    "pattern": "4724",
+    "weight": 6,
+    "category": "Authentication",
+    "suggested_treatment": "Check password resets for authorization"
+  },
+  {
+    "id": 23,
+    "name": "Process Created",
+    "pattern": "4688",
+    "weight": 5,
+    "category": "Process",
+    "suggested_treatment": "Monitor suspicious process creation"
+  },
+  {
+    "id": 24,
+    "name": "Process Terminated",
+    "pattern": "4689",
+    "weight": 4,
+    "category": "Process",
+    "suggested_treatment": "Check unexpected process terminations"
+  },
+  {
+    "id": 25,
+    "name": "Privilege Escalation Attempt",
+    "pattern": "4672",
+    "weight": 9,
+    "category": "Privilege",
+    "suggested_treatment": "Investigate privilege escalation attempts"
+  },
+  {
+    "id": 26,
+    "name": "File Permission Changed",
+    "pattern": "4660",
+    "weight": 6,
+    "category": "File Access",
+    "suggested_treatment": "Verify file permission changes"
+  },
+  {
+    "id": 27,
+    "name": "Object Ownership Changed",
+    "pattern": "4670",
+    "weight": 7,
+    "category": "File Access",
+    "suggested_treatment": "Check changes in file ownership"
+  },
+  {
+    "id": 28,
+    "name": "Security Group Created",
+    "pattern": "4731",
+    "weight": 6,
+    "category": "Privilege",
+    "suggested_treatment": "Verify creation of security groups"
+  },
+  {
+    "id": 29,
+    "name": "Security Group Deleted",
+    "pattern": "4734",
+    "weight": 6,
+    "category": "Privilege",
+    "suggested_treatment": "Verify deletion of security groups"
+  },
+  {
+    "id": 30,
+    "name": "Directory Service Changes",
+    "pattern": "5136",
+    "weight": 7,
+    "category": "System",
+    "suggested_treatment": "Check unauthorized directory service modifications"
+  },
+  {
+    "id": 31,
+    "name": "Directory Service Object Created",
+    "pattern": "5137",
+    "weight": 6,
+    "category": "System",
+    "suggested_treatment": "Verify creation of directory service objects"
+  },
+  {
+    "id": 32,
+    "name": "Directory Service Object Deleted",
+    "pattern": "5141",
+    "weight": 6,
+    "category": "System",
+    "suggested_treatment": "Verify deletion of directory service objects"
+  },
+  {
+    "id": 33,
+    "name": "Directory Service Object Modified",
+    "pattern": "5136",
+    "weight": 7,
+    "category": "System",
+    "suggested_treatment": "Verify modifications of directory service objects"
+  },
+  {
+    "id": 34,
+    "name": "Credential Manager Access",
+    "pattern": "4648",
+    "weight": 5,
+    "category": "Authentication",
+    "suggested_treatment": "Check if credential use is authorized"
+  },
+  {
+    "id": 35,
+    "name": "IPSec Policy Change",
+    "pattern": "4902",
+    "weight": 7,
+    "category": "System",
+    "suggested_treatment": "Verify IPSec policy changes are authorized"
+  },
+  {
+    "id": 36,
+    "name": "Network Policy Change",
+    "pattern": "4739",
+    "weight": 7,
+    "category": "System",
+    "suggested_treatment": "Check if network policy changes are authorized"
+  },
+  {
+    "id": 37,
+    "name": "Registry Key Added",
+    "pattern": "4657",
+    "weight": 6,
+    "category": "System",
+    "suggested_treatment": "Verify registry changes"
+  },
+  {
+    "id": 38,
+    "name": "Registry Key Deleted",
+    "pattern": "4659",
+    "weight": 6,
+    "category": "System",
+    "suggested_treatment": "Verify registry deletion is authorized"
+  },
+  {
+    "id": 39,
+    "name": "Security Policy Changed",
+    "pattern": "4739",
+    "weight": 7,
+    "category": "System",
+    "suggested_treatment": "Check security policy changes"
+  },
+  {
+    "id": 40,
+    "name": "Logon Attempt Outside Business Hours",
+    "pattern": "4624.*time",
+    "weight": 6,
+    "category": "Authentication",
+    "suggested_treatment": "Investigate unusual logon times"
+  }
+]
