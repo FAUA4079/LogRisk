@@ -1,0 +1,322 @@
+[
+  {
+    "id": 1,
+    "name": "Application Error",
+    "pattern": "1000",
+    "weight": 7,
+    "category": "Application",
+    "suggested_treatment": "Investigate the cause of the application crash"
+  },
+  {
+    "id": 2,
+    "name": "Application Hang",
+    "pattern": "1002",
+    "weight": 6,
+    "category": "Application",
+    "suggested_treatment": "Check for unresponsive applications and resolve issues"
+  },
+  {
+    "id": 3,
+    "name": "Application Start",
+    "pattern": "1001",
+    "weight": 4,
+    "category": "Application",
+    "suggested_treatment": "Monitor application start events"
+  },
+  {
+    "id": 4,
+    "name": "Application Stop",
+    "pattern": "1003",
+    "weight": 4,
+    "category": "Application",
+    "suggested_treatment": "Track application termination events"
+  },
+  {
+    "id": 5,
+    "name": "Application Update Installed",
+    "pattern": "11707",
+    "weight": 5,
+    "category": "Application",
+    "suggested_treatment": "Verify updates are legitimate"
+  },
+  {
+    "id": 6,
+    "name": "Application Update Failed",
+    "pattern": "11708",
+    "weight": 6,
+    "category": "Application",
+    "suggested_treatment": "Investigate reasons for update failure"
+  },
+  {
+    "id": 7,
+    "name": "Application Configuration Changed",
+    "pattern": "1033",
+    "weight": 6,
+    "category": "Application",
+    "suggested_treatment": "Check for unauthorized configuration changes"
+  },
+  {
+    "id": 8,
+    "name": "Application Installation",
+    "pattern": "11724",
+    "weight": 5,
+    "category": "Application",
+    "suggested_treatment": "Verify installed software is authorized"
+  },
+  {
+    "id": 9,
+    "name": "Application Removal",
+    "pattern": "1035",
+    "weight": 5,
+    "category": "Application",
+    "suggested_treatment": "Ensure removed applications are intended"
+  },
+  {
+    "id": 10,
+    "name": "Application License Expired",
+    "pattern": "2001",
+    "weight": 6,
+    "category": "Application",
+    "suggested_treatment": "Update or renew application license"
+  },
+  {
+    "id": 11,
+    "name": "Application Service Started",
+    "pattern": "7036",
+    "weight": 5,
+    "category": "Application",
+    "suggested_treatment": "Monitor application service starts"
+  },
+  {
+    "id": 12,
+    "name": "Application Service Stopped",
+    "pattern": "7036",
+    "weight": 5,
+    "category": "Application",
+    "suggested_treatment": "Monitor application service stops"
+  },
+  {
+    "id": 13,
+    "name": "Application Crash Dump Created",
+    "pattern": "1001",
+    "weight": 7,
+    "category": "Application",
+    "suggested_treatment": "Analyze crash dump to identify root cause"
+  },
+  {
+    "id": 14,
+    "name": "Application Permission Change",
+    "pattern": "4656",
+    "weight": 6,
+    "category": "Application",
+    "suggested_treatment": "Verify permission changes are authorized"
+  },
+  {
+    "id": 15,
+    "name": "Application Event Log Cleared",
+    "pattern": "1102",
+    "weight": 9,
+    "category": "Application",
+    "suggested_treatment": "Investigate if log clearing is malicious"
+  },
+  {
+    "id": 16,
+    "name": "Application High CPU Usage",
+    "pattern": "3001",
+    "weight": 6,
+    "category": "Application",
+    "suggested_treatment": "Check for resource-consuming processes"
+  },
+  {
+    "id": 17,
+    "name": "Application Memory Leak",
+    "pattern": "3002",
+    "weight": 7,
+    "category": "Application",
+    "suggested_treatment": "Identify source of memory leak and fix"
+  },
+  {
+    "id": 18,
+    "name": "Application Configuration Backup",
+    "pattern": "4000",
+    "weight": 4,
+    "category": "Application",
+    "suggested_treatment": "Ensure backup completed successfully"
+  },
+  {
+    "id": 19,
+    "name": "Application Authentication Failure",
+    "pattern": "4625",
+    "weight": 7,
+    "category": "Application",
+    "suggested_treatment": "Investigate failed login attempts in the app"
+  },
+  {
+    "id": 20,
+    "name": "Application Login Success",
+    "pattern": "4624",
+    "weight": 5,
+    "category": "Application",
+    "suggested_treatment": "Track successful logins for auditing"
+  },
+  {
+    "id": 21,
+    "name": "Application Configuration Deleted",
+    "pattern": "4660",
+    "weight": 6,
+    "category": "Application",
+    "suggested_treatment": "Verify configuration deletions are authorized"
+  },
+  {
+    "id": 22,
+    "name": "Application Temporary Files Created",
+    "pattern": "5000",
+    "weight": 4,
+    "category": "Application",
+    "suggested_treatment": "Check temporary files do not affect storage"
+  },
+  {
+    "id": 23,
+    "name": "Application Temporary Files Deleted",
+    "pattern": "5001",
+    "weight": 4,
+    "category": "Application",
+    "suggested_treatment": "Ensure deletion is normal cleanup"
+  },
+  {
+    "id": 24,
+    "name": "Application Critical Error",
+    "pattern": "1000",
+    "weight": 8,
+    "category": "Application",
+    "suggested_treatment": "Investigate critical errors immediately"
+  },
+  {
+    "id": 25,
+    "name": "Application Warning",
+    "pattern": "1001",
+    "weight": 5,
+    "category": "Application",
+    "suggested_treatment": "Monitor warning events for potential issues"
+  },
+  {
+    "id": 26,
+    "name": "Application Dependency Failure",
+    "pattern": "2002",
+    "weight": 7,
+    "category": "Application",
+    "suggested_treatment": "Check and resolve dependency failures"
+  },
+  {
+    "id": 27,
+    "name": "Application Thread Crash",
+    "pattern": "1001",
+    "weight": 7,
+    "category": "Application",
+    "suggested_treatment": "Investigate thread crashes for root cause"
+  },
+  {
+    "id": 28,
+    "name": "Application Update Pending",
+    "pattern": "11709",
+    "weight": 4,
+    "category": "Application",
+    "suggested_treatment": "Ensure pending updates are applied promptly"
+  },
+  {
+    "id": 29,
+    "name": "Application Patch Installed",
+    "pattern": "11710",
+    "weight": 5,
+    "category": "Application",
+    "suggested_treatment": "Verify patches applied are authorized"
+  },
+  {
+    "id": 30,
+    "name": "Application Patch Failed",
+    "pattern": "11711",
+    "weight": 6,
+    "category": "Application",
+    "suggested_treatment": "Investigate patch failures immediately"
+  },
+  {
+    "id": 31,
+    "name": "Application Database Error",
+    "pattern": "2100",
+    "weight": 7,
+    "category": "Application",
+    "suggested_treatment": "Check database connections and queries"
+  },
+  {
+    "id": 32,
+    "name": "Application License Key Invalid",
+    "pattern": "2003",
+    "weight": 6,
+    "category": "Application",
+    "suggested_treatment": "Verify license key or renew"
+  },
+  {
+    "id": 33,
+    "name": "Application Service Crash",
+    "pattern": "1000",
+    "weight": 8,
+    "category": "Application",
+    "suggested_treatment": "Investigate service crashes immediately"
+  },
+  {
+    "id": 34,
+    "name": "Application File Corruption",
+    "pattern": "3003",
+    "weight": 7,
+    "category": "Application",
+    "suggested_treatment": "Repair corrupted files"
+  },
+  {
+    "id": 35,
+    "name": "Application Config File Modified",
+    "pattern": "4663",
+    "weight": 6,
+    "category": "Application",
+    "suggested_treatment": "Verify modifications are authorized"
+  },
+  {
+    "id": 36,
+    "name": "Application Log Overflow",
+    "pattern": "5005",
+    "weight": 5,
+    "category": "Application",
+    "suggested_treatment": "Monitor log sizes and rotate logs"
+  },
+  {
+    "id": 37,
+    "name": "Application Network Error",
+    "pattern": "4001",
+    "weight": 6,
+    "category": "Application",
+    "suggested_treatment": "Check network connectivity for the application"
+  },
+  {
+    "id": 38,
+    "name": "Application Configuration Rollback",
+    "pattern": "4002",
+    "weight": 5,
+    "category": "Application",
+    "suggested_treatment": "Ensure rollback was authorized"
+  },
+  {
+    "id": 39,
+    "name": "Application Resource Limit Reached",
+    "pattern": "5006",
+    "weight": 6,
+    "category": "Application",
+    "suggested_treatment": "Check and increase resource allocation if needed"
+  },
+  {
+    "id": 40,
+    "name": "Application Security Alert",
+    "pattern": "1005",
+    "weight": 8,
+    "category": "Application",
+    "suggested_treatment": "Investigate application security alert immediately"
+  }
+]
