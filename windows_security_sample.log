@@ -1,0 +1,133 @@
+Log Name: Security
+Source: Microsoft-Windows-Security-Auditing
+Date: 9/19/2025 08:15:12
+Event ID: 4624
+Level: Information
+Description:
+An account was successfully logged on.
+User: User1
+Logon Type: 2
+Source Network Address: 192.168.1.10
+
+Log Name: Security
+Source: Microsoft-Windows-Security-Auditing
+Date: 9/19/2025 08:20:33
+Event ID: 4625
+Level: Failure
+Description:
+An account failed to log on.
+User: InvalidUser
+Logon Type: 3
+Source Network Address: 192.168.1.20
+
+Log Name: Security
+Source: Microsoft-Windows-Security-Auditing
+Date: 9/19/2025 08:25:50
+Event ID: 4672
+Level: Information
+Description:
+Special privileges assigned to new logon.
+User: User1
+Privileges: SeDebugPrivilege, SeBackupPrivilege
+
+Log Name: Security
+Source: Microsoft-Windows-Security-Auditing
+Date: 9/19/2025 08:27:12
+Event ID: 4648
+Level: Information
+Description:
+A logon attempt was made using explicit credentials.
+User: User2
+Logon Type: 3
+Source Network Address: 192.168.1.30
+
+Log Name: Security
+Source: Microsoft-Windows-Security-Auditing
+Date: 9/19/2025 08:30:45
+Event ID: 1102
+Level: Warning
+Description:
+The audit log was cleared.
+User: Administrator
+
+Log Name: Security
+Source: Microsoft-Windows-Security-Auditing
+Date: 9/19/2025 08:32:18
+Event ID: 4720
+Level: Information
+Description:
+A user account was created.
+Account Name: User3
+Created by: Administrator
+
+Log Name: Security
+Source: Microsoft-Windows-Security-Auditing
+Date: 9/19/2025 08:35:10
+Event ID: 4726
+Level: Information
+Description:
+A user account was deleted.
+Account Name: User4
+Deleted by: Administrator
+
+Log Name: Security
+Source: Microsoft-Windows-Security-Auditing
+Date: 9/19/2025 08:38:05
+Event ID: 4732
+Level: Information
+Description:
+A member was added to a security-enabled local group.
+Group: Administrators
+Added User: User5
+Added by: Administrator
+
+Log Name: Security
+Source: Microsoft-Windows-Security-Auditing
+Date: 9/19/2025 08:40:12
+Event ID: 4740
+Level: Warning
+Description:
+A user account was locked out.
+Account Name: User6
+Locked Out by: SYSTEM
+
+Log Name: Security
+Source: Microsoft-Windows-Security-Auditing
+Date: 9/19/2025 08:42:50
+Event ID: 4670
+Level: Warning
+Description:
+Permissions on an object were changed.
+Object: C:\ImportantFolder
+Changed by: User2
+
+Log Name: Security
+Source: Microsoft-Windows-Security-Auditing
+Date: 9/19/2025 08:45:30
+Event ID: 4688
+Level: Information
+Description:
+A new process has been created.
+Process Name: powershell.exe
+Created by: User3
+
+Log Name: Security
+Source: Microsoft-Windows-Security-Auditing
+Date: 9/19/2025 08:48:10
+Event ID: 4673
+Level: Critical
+Description:
+A privileged service was executed.
+User: User1
+Operation: SeRestorePrivilege
+
+Log Name: Security
+Source: Microsoft-Windows-Security-Auditing
+Date: 9/19/2025 08:50:22
+Event ID: 4649
+Level: Information
+Description:
+A logon attempt was made using explicit credentials to a remote system.
+User: User3
+Target Machine: 192.168.1.50
+Logon Type: 3
