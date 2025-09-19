@@ -1,0 +1,109 @@
+Log Name: System
+Source: Service Control Manager
+Date: 9/19/2025 08:15:12
+Event ID: 7036
+Task Category: None
+Level: Information
+User: N/A
+Computer: WIN-PC
+Description:
+The Windows Update service entered the running state.
+
+Log Name: System
+Source: Service Control Manager
+Date: 9/19/2025 08:20:33
+Event ID: 7036
+Task Category: None
+Level: Information
+User: N/A
+Computer: WIN-PC
+Description:
+The Print Spooler service entered the stopped state.
+
+Log Name: System
+Source: Disk
+Date: 9/19/2025 08:25:50
+Event ID: 7
+Task Category: Disk
+Level: Warning
+User: N/A
+Computer: WIN-PC
+Description:
+The device, \Device\Harddisk0\DR0, has a bad block.
+
+Log Name: System
+Source: Kernel-Power
+Date: 9/19/2025 08:27:12
+Event ID: 41
+Task Category: (63)
+Level: Critical
+User: N/A
+Computer: WIN-PC
+Description:
+The system has rebooted without cleanly shutting down first.
+
+Log Name: System
+Source: Ntfs
+Date: 9/19/2025 08:30:45
+Event ID: 55
+Task Category: File System
+Level: Error
+User: N/A
+Computer: WIN-PC
+Description:
+The file system structure on the disk is corrupt and unusable.
+
+Log Name: System
+Source: Service Control Manager
+Date: 9/19/2025 08:32:22
+Event ID: 7031
+Task Category: None
+Level: Error
+User: N/A
+Computer: WIN-PC
+Description:
+The Windows Event Log service terminated unexpectedly. It has done this 1 time(s).
+
+Log Name: System
+Source: Tcpip
+Date: 9/19/2025 08:35:05
+Event ID: 4199
+Task Category: None
+Level: Warning
+User: N/A
+Computer: WIN-PC
+Description:
+TCP/IP has reached the security limit imposed on the number of concurrent TCP connect attempts.
+
+Log Name: System
+Source: Kernel-General
+Date: 9/19/2025 08:38:10
+Event ID: 12
+Task Category: None
+Level: Information
+User: N/A
+Computer: WIN-PC
+Description:
+The operating system started at system time ‎2025‎-09‎-19T08:38:10.123456700Z.
+
+Log Name: System
+Source: EventLog
+Date: 9/19/2025 08:40:33
+Event ID: 6008
+Task Category: None
+Level: Error
+User: N/A
+Computer: WIN-PC
+Description:
+The previous system shutdown at 8:30:05 AM on ‎9/19/2025 was unexpected.
+
+Log Name: System
+Source: Service Control Manager
+Date: 9/19/2025 08:42:50
+Event ID: 7040
+Task Category: None
+Level: Information
+User: N/A
+Computer: WIN-PC
+Description:
+The Windows Update service startup type was changed from Automatic to Manual.
