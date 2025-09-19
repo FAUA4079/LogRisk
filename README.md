@@ -1,21 +1,36 @@
 Description:
-LogSentinel is a command-line tool designed for Security Governance, Risk Management, and Compliance (GRC) purposes. It analyzes operating system log files to identify potential security risks based on predefined rules. The tool automatically detects suspicious activities, assigns risk levels, and provides detailed remediation recommendations to mitigate threats. LogSentinel generates both human-readable reports and machine-readable JSON outputs, allowing security analysts to quickly review and act on findings. With features like configurable risk rules, verbose scanning, and persistence of past scans, LogSentinel streamlines log-based risk analysis and supports proactive cybersecurity management.
+LogRisk Analyzer is a command-line tool designed for Security Governance, Risk Management, and Compliance (GRC) purposes. It enables IT administrators, security analysts, and compliance teams to automatically scan and analyze log files from Linux and Windows systems to identify potential security and operational risks.
+
+The tool supports:
+
+Linux log analysis: Monitors authentication events, sudo commands, cron jobs, kernel messages, and system errors.
+
+Windows log analysis: Supports Application, System, and Security logs to detect crashes, hangs, failed updates, unauthorized changes, and security alerts.
 
 Key Features:
 
-Scan OS log files for declared risk patterns.
+Customizable risk rules stored in JSON files for each log type.
 
-Predict risk levels (Low, Medium, High) based on matched events.
+Automatic risk assessment, assigning severity levels based on detected events.
 
-Generate detailed remediation steps for detected risks.
+Detailed mitigation suggestions for each detected risk.
 
-Produce human-readable reports and JSON reports for integration.
+Organized output: Results are saved in separate folders for Linux, Windows Application, Windows System, and Windows Security logs.
 
-Configurable rules via JSON for flexible risk definitions.
+Command-line interface for quick scanning using intuitive commands like:
 
-Verbose mode for step-by-step analysis feedback.
+Linux: --linux
 
-Persisted scan data for quick re-analysis without rescanning logs.
+Windows Security: --w-security
 
-Use Case:
-Ideal for system administrators, security analysts, and compliance officers to monitor system logs, detect suspicious behavior, and maintain regulatory compliance with minimal effort.
+Windows System: --w-system
+
+Windows Application: --w-application
+
+Benefits:
+
+Streamlines risk detection and reporting from log data.
+
+Helps maintain compliance standards by monitoring critical system events.
+
+Provides actionable recommendations to reduce operational and security risks.
