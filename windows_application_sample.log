@@ -1,0 +1,109 @@
+Log Name: Application
+Source: Application Error
+Date: 9/19/2025 08:15:12
+Event ID: 1000
+Task Category: (100)
+Level: Error
+User: N/A
+Computer: WIN-PC
+Description:
+Faulting application name: notepad.exe, version: 10.0.19041.1, faulting module: ntdll.dll, fault address: 0x00007fff1f3c2f45
+
+Log Name: Application
+Source: Application Hang
+Date: 9/19/2025 08:20:33
+Event ID: 1002
+Task Category: (100)
+Level: Warning
+User: N/A
+Computer: WIN-PC
+Description:
+The program outlook.exe version 16.0.13901.20400 hung on Windows.
+
+Log Name: Application
+Source: MsiInstaller
+Date: 9/19/2025 08:25:50
+Event ID: 11707
+Task Category: Installation
+Level: Information
+User: WIN-PC\User1
+Computer: WIN-PC
+Description:
+Installation of Update for Microsoft Office 2016 (KB5002032) completed successfully.
+
+Log Name: Application
+Source: MsiInstaller
+Date: 9/19/2025 08:27:12
+Event ID: 11708
+Task Category: Installation
+Level: Error
+User: WIN-PC\User1
+Computer: WIN-PC
+Description:
+Installation of Update for Adobe Acrobat Reader DC failed with error code 1603.
+
+Log Name: Application
+Source: Application Error
+Date: 9/19/2025 08:30:45
+Event ID: 1001
+Task Category: (100)
+Level: Error
+User: N/A
+Computer: WIN-PC
+Description:
+Windows Error Reporting event for faulting application: chrome.exe, faulting module: kernel32.dll
+
+Log Name: Application
+Source: Application Error
+Date: 9/19/2025 08:32:22
+Event ID: 1000
+Task Category: (100)
+Level: Error
+User: N/A
+Computer: WIN-PC
+Description:
+Faulting application name: powershell.exe, faulting module: ntdll.dll, fault address: 0x00007fff1f4d1f11
+
+Log Name: Application
+Source: MsiInstaller
+Date: 9/19/2025 08:35:05
+Event ID: 1033
+Task Category: Configuration
+Level: Information
+User: WIN-PC\User2
+Computer: WIN-PC
+Description:
+Application configuration for Visual Studio 2019 changed successfully.
+
+Log Name: Application
+Source: Application Error
+Date: 9/19/2025 08:38:10
+Event ID: 1002
+Task Category: Hang
+Level: Warning
+User: N/A
+Computer: WIN-PC
+Description:
+The program Teams.exe hung on Windows.
+
+Log Name: Application
+Source: Application Error
+Date: 9/19/2025 08:40:33
+Event ID: 1005
+Task Category: Security
+Level: Critical
+User: N/A
+Computer: WIN-PC
+Description:
+Application security alert detected in firewall monitoring service.
+
+Log Name: Application
+Source: MsiInstaller
+Date: 9/19/2025 08:42:50
+Event ID: 11709
+Task Category: Update Pending
+Level: Information
+User: WIN-PC\User1
+Computer: WIN-PC
+Description:
+Pending update installation for Adobe Acrobat Reader DC.
