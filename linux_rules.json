@@ -1,0 +1,402 @@
+[
+  {
+    "id": 1,
+    "name": "Failed SSH Login",
+    "pattern": "Failed password for",
+    "weight": 8,
+    "category": "Authentication",
+    "suggested_treatment": "Investigate IP and user, consider blocking IP if repeated failures"
+  },
+  {
+    "id": 2,
+    "name": "Successful Root SSH Login",
+    "pattern": "Accepted password for root",
+    "weight": 9,
+    "category": "Authentication",
+    "suggested_treatment": "Check if root login is allowed; use key-based login and disable password login for root"
+  },
+  {
+    "id": 3,
+    "name": "User Added to Sudoers",
+    "pattern": "sudo:.*: TTY=.* ; PWD=.* ; USER=root ; COMMAND=.*",
+    "weight": 7,
+    "category": "Privilege",
+    "suggested_treatment": "Verify if new sudo access is authorized"
+  },
+  {
+    "id": 4,
+    "name": "SSH Login from Unknown IP",
+    "pattern": "Accepted password for .* from .*",
+    "weight": 6,
+    "category": "Authentication",
+    "suggested_treatment": "Verify IP, consider restricting SSH access by IP"
+  },
+  {
+    "id": 5,
+    "name": "Repeated Failed SSH Attempts",
+    "pattern": "Failed password for .* from .*",
+    "weight": 8,
+    "category": "Authentication",
+    "suggested_treatment": "Enable fail2ban or block suspicious IPs"
+  },
+  {
+    "id": 6,
+    "name": "SUID File Created",
+    "pattern": "chmod.*s",
+    "weight": 7,
+    "category": "Privilege",
+    "suggested_treatment": "Check if new SUID files are authorized"
+  },
+  {
+    "id": 7,
+    "name": "User Account Locked",
+    "pattern": "account .* locked",
+    "weight": 5,
+    "category": "Account",
+    "suggested_treatment": "Verify the reason for locking and ensure user should be locked"
+  },
+  {
+    "id": 8,
+    "name": "Failed Cron Job",
+    "pattern": "cron.*FAILED",
+    "weight": 4,
+    "category": "System",
+    "suggested_treatment": "Check cron jobs for misconfiguration or errors"
+  },
+  {
+    "id": 9,
+    "name": "System Reboot",
+    "pattern": "reboot",
+    "weight": 3,
+    "category": "System",
+    "suggested_treatment": "Ensure reboot was authorized"
+  },
+  {
+    "id": 10,
+    "name": "Kernel Error",
+    "pattern": "kernel:.*error",
+    "weight": 6,
+    "category": "System",
+    "suggested_treatment": "Investigate kernel errors and system stability"
+  },
+  {
+    "id": 11,
+    "name": "Unauthorized File Deletion",
+    "pattern": "rm .*",
+    "weight": 7,
+    "category": "File System",
+    "suggested_treatment": "Verify deletion was authorized"
+  },
+  {
+    "id": 12,
+    "name": "SSH Key Added",
+    "pattern": "ssh-rsa",
+    "weight": 5,
+    "category": "Authentication",
+    "suggested_treatment": "Check if new SSH key is authorized"
+  },
+  {
+    "id": 13,
+    "name": "Password Changed",
+    "pattern": "passwd: password for",
+    "weight": 4,
+    "category": "Authentication",
+    "suggested_treatment": "Confirm password changes are authorized"
+  },
+  {
+    "id": 14,
+    "name": "Failed Sudo Attempt",
+    "pattern": "sudo: .* : 3 incorrect password attempts",
+    "weight": 6,
+    "category": "Privilege",
+    "suggested_treatment": "Investigate failed sudo attempts"
+  },
+  {
+    "id": 15,
+    "name": "Suspicious Process Started",
+    "pattern": ".*sh -i",
+    "weight": 8,
+    "category": "Process",
+    "suggested_treatment": "Investigate suspicious interactive shell execution"
+  },
+  {
+    "id": 16,
+    "name": "Network Connection to Unknown IP",
+    "pattern": "connection from .*",
+    "weight": 6,
+    "category": "Network",
+    "suggested_treatment": "Investigate unknown network connection"
+  },
+  {
+    "id": 17,
+    "name": "User Account Created",
+    "pattern": "new user:",
+    "weight": 5,
+    "category": "Account",
+    "suggested_treatment": "Verify if the new user account is authorized"
+  },
+  {
+    "id": 18,
+    "name": "Root Privilege Escalation Attempt",
+    "pattern": "root privileges gained",
+    "weight": 9,
+    "category": "Privilege",
+    "suggested_treatment": "Investigate unauthorized privilege escalation"
+  },
+  {
+    "id": 19,
+    "name": "Suspicious Cron Job Added",
+    "pattern": "cron.*added",
+    "weight": 6,
+    "category": "System",
+    "suggested_treatment": "Check if new cron job is authorized"
+  },
+  {
+    "id": 20,
+    "name": "Failed Mount Attempt",
+    "pattern": "mount: permission denied",
+    "weight": 4,
+    "category": "File System",
+    "suggested_treatment": "Verify mount operation and permissions"
+  },
+  {
+    "id": 21,
+    "name": "SSH Connection Closed Unexpectedly",
+    "pattern": "Disconnected from",
+    "weight": 3,
+    "category": "Network",
+    "suggested_treatment": "Investigate SSH session termination"
+  },
+  {
+    "id": 22,
+    "name": "Privilege Escalation via Sudo",
+    "pattern": "sudo .* root",
+    "weight": 8,
+    "category": "Privilege",
+    "suggested_treatment": "Ensure sudo escalation is authorized"
+  },
+  {
+    "id": 23,
+    "name": "Failed Login Lockout Triggered",
+    "pattern": "authentication failure; .* locked",
+    "weight": 5,
+    "category": "Authentication",
+    "suggested_treatment": "Check if lockout triggered correctly or suspicious activity"
+  },
+  {
+    "id": 24,
+    "name": "File Permission Changed",
+    "pattern": "chmod .*",
+    "weight": 5,
+    "category": "File System",
+    "suggested_treatment": "Verify permission changes are authorized"
+  },
+  {
+    "id": 25,
+    "name": "Service Started",
+    "pattern": "Starting .* service",
+    "weight": 3,
+    "category": "System",
+    "suggested_treatment": "Check if service start was authorized"
+  },
+  {
+    "id": 26,
+    "name": "Service Stopped",
+    "pattern": "Stopped .* service",
+    "weight": 3,
+    "category": "System",
+    "suggested_treatment": "Check if service stop was authorized"
+  },
+  {
+    "id": 27,
+    "name": "SSH Brute Force Detected",
+    "pattern": "Failed password for .* from .*",
+    "weight": 9,
+    "category": "Authentication",
+    "suggested_treatment": "Enable fail2ban or block IPs with repeated failures"
+  },
+  {
+    "id": 28,
+    "name": "Kernel Panic",
+    "pattern": "kernel panic",
+    "weight": 10,
+    "category": "System",
+    "suggested_treatment": "Investigate kernel panic and fix underlying issue"
+  },
+  {
+    "id": 29,
+    "name": "Disk Full Warning",
+    "pattern": "disk space low",
+    "weight": 5,
+    "category": "System",
+    "suggested_treatment": "Clean disk space and monitor storage"
+  },
+  {
+    "id": 30,
+    "name": "Unauthorized Package Installed",
+    "pattern": "dpkg:.*install",
+    "weight": 6,
+    "category": "System",
+    "suggested_treatment": "Verify package installation was authorized"
+  },
+  {
+    "id": 31,
+    "name": "Root Login via Console",
+    "pattern": "root login on",
+    "weight": 7,
+    "category": "Authentication",
+    "suggested_treatment": "Check if console root login is authorized"
+  },
+  {
+    "id": 32,
+    "name": "Failed SFTP Upload",
+    "pattern": "sftp.*failed",
+    "weight": 4,
+    "category": "File Transfer",
+    "suggested_treatment": "Check SFTP errors and permissions"
+  },
+  {
+    "id": 33,
+    "name": "Firewall Disabled",
+    "pattern": "ufw disabled",
+    "weight": 8,
+    "category": "Network",
+    "suggested_treatment": "Enable firewall and verify rules"
+  },
+  {
+    "id": 34,
+    "name": "Unauthorized Cron Modification",
+    "pattern": "cron.*edited",
+    "weight": 6,
+    "category": "System",
+    "suggested_treatment": "Verify cron job edits are authorized"
+  },
+  {
+    "id": 35,
+    "name": "Failed Sudo Session",
+    "pattern": "sudo: .* : authentication failure",
+    "weight": 6,
+    "category": "Privilege",
+    "suggested_treatment": "Check failed sudo attempts"
+  },
+  {
+    "id": 36,
+    "name": "SELinux Denial",
+    "pattern": "SELinux:.*denied",
+    "weight": 7,
+    "category": "System",
+    "suggested_treatment": "Review SELinux logs and fix policies"
+  },
+  {
+    "id": 37,
+    "name": "SSH Port Scan Detected",
+    "pattern": "nmap.*",
+    "weight": 8,
+    "category": "Network",
+    "suggested_treatment": "Investigate scanning activity"
+  },
+  {
+    "id": 38,
+    "name": "Unexpected Software Removal",
+    "pattern": "dpkg:.*remove",
+    "weight": 6,
+    "category": "System",
+    "suggested_treatment": "Verify removal was authorized"
+  },
+  {
+    "id": 39,
+    "name": "User Password Expired",
+    "pattern": "password expired",
+    "weight": 4,
+    "category": "Authentication",
+    "suggested_treatment": "Notify user and enforce password change"
+  },
+  {
+    "id": 40,
+    "name": "Suspicious Cron Execution",
+    "pattern": "cron.*executed",
+    "weight": 5,
+    "category": "System",
+    "suggested_treatment": "Verify if cron job execution is authorized"
+  },
+  {
+    "id": 41,
+    "name": "Unauthorized File Access",
+    "pattern": "permission denied: .*",
+    "weight": 6,
+    "category": "File System",
+    "suggested_treatment": "Check who tried to access the file and permissions"
+  },
+  {
+    "id": 42,
+    "name": "Multiple Failed Login Attempts",
+    "pattern": "authentication failure; .*",
+    "weight": 7,
+    "category": "Authentication",
+    "suggested_treatment": "Consider temporary lockout or blocking IPs"
+  },
+  {
+    "id": 43,
+    "name": "Unexpected System Shutdown",
+    "pattern": "shutdown",
+    "weight": 7,
+    "category": "System",
+    "suggested_treatment": "Investigate reason for shutdown"
+  },
+  {
+    "id": 44,
+    "name": "Unauthorized SUID Modification",
+    "pattern": "chmod .*s",
+    "weight": 8,
+    "category": "Privilege",
+    "suggested_treatment": "Check SUID changes"
+  },
+  {
+    "id": 45,
+    "name": "Core Dump Generated",
+    "pattern": "core dumped",
+    "weight": 5,
+    "category": "System",
+    "suggested_treatment": "Investigate crash and potential security implications"
+  },
+  {
+    "id": 46,
+    "name": "SSH Connection from Blacklisted IP",
+    "pattern": "from 192\\.168\\.1\\..*",
+    "weight": 6,
+    "category": "Network",
+    "suggested_treatment": "Block unauthorized IP"
+  },
+  {
+    "id": 47,
+    "name": "System Time Changed",
+    "pattern": "clock change",
+    "weight": 5,
+    "category": "System",
+    "suggested_treatment": "Verify if time change is authorized"
+  },
+  {
+    "id": 48,
+    "name": "Unauthorized Package Update",
+    "pattern": "apt-get update",
+    "weight": 6,
+    "category": "System",
+    "suggested_treatment": "Verify updates are authorized"
+  },
+  {
+    "id": 49,
+    "name": "SELinux Policy Change",
+    "pattern": "SELinux:.*policy",
+    "weight": 6,
+    "category": "System",
+    "suggested_treatment": "Check policy change is authorized"
+  },
+  {
+    "id": 50,
+    "name": "Unexpected Service Restart",
+    "pattern": "service .* restart",
+    "weight": 5,
+    "category": "System",
+    "suggested_treatment": "Confirm service restart is authorized"
+  }
+]
