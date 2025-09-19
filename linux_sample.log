@@ -1,0 +1,19 @@
+Sep 19 08:21:15 ubuntu sshd[1023]: Accepted password for user1 from 192.168.1.10 port 52114 ssh2
+Sep 19 08:21:16 ubuntu sshd[1023]: pam_unix(sshd:session): session opened for user user1 by (uid=0)
+Sep 19 08:22:45 ubuntu sudo:    user1 : TTY=pts/0 ; PWD=/home/user1 ; USER=root ; COMMAND=/bin/apt update
+Sep 19 08:22:45 ubuntu sudo: pam_unix(sudo:session): session opened for user root by user1(uid=0)
+Sep 19 08:23:01 ubuntu kernel: [    0.000000] Linux version 5.15.0-73-generic (buildd@lcy01-amd64-001)
+Sep 19 08:25:10 ubuntu cron[1122]: (root) CMD (   cd / && run-parts --report /etc/cron.daily)
+Sep 19 08:26:35 ubuntu systemd[1]: Started Daily apt download activities.
+Sep 19 08:27:50 ubuntu sshd[1045]: Failed password for invalid user test from 192.168.1.20 port 53412 ssh2
+Sep 19 08:30:02 ubuntu kernel: [   12.345678] usb 1-1.2: new high-speed USB device number 6 using xhci_hcd
+Sep 19 08:32:18 ubuntu sudo:    user2 : TTY=pts/1 ; PWD=/home/user2 ; USER=root ; COMMAND=/bin/systemctl restart apache2
+Sep 19 08:35:55 ubuntu sshd[1055]: Disconnected from user1 192.168.1.10 port 52114
+Sep 19 08:37:22 ubuntu su[1060]: Successful su for root by user1
+Sep 19 08:38:40 ubuntu su[1061]: Failed su for root by user2
+Sep 19 08:40:05 ubuntu systemd[1]: Stopping User Manager for UID 1001...
+Sep 19 08:42:12 ubuntu kernel: [   45.678912] EXT4-fs error (device sda1): ext4_find_entry:1456: inode #2: comm bash: reading directory lblock 0
+Sep 19 08:45:00 ubuntu cron[1122]: (root) CMD (   cd / && run-parts --report /etc/cron.hourly)
+Sep 19 08:46:30 ubuntu sshd[1075]: Accepted publickey for user3 from 192.168.1.30 port 54823 ssh2
+Sep 19 08:50:14 ubuntu systemd[1]: Started Session 4 of user user3.
+Sep 19 08:52:41 ubuntu sudo:    user3 : TTY=pts/2 ; PWD=/home/user3 ; USER=root ; COMMAND=/bin/journalctl -xe
