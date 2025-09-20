@@ -91,7 +91,7 @@ def save_reports(matches, output_name, run_folder, log_file, json_report=False):
 # -------------------------
 def main():
     parser = argparse.ArgumentParser(
-        description="LogSentinel - OS Log Risk Analysis Tool",
+        description="LogRisk - OS Log Risk Analysis Tool",
         add_help=False  # disable default help to customize
     )
 
@@ -110,7 +110,7 @@ def main():
 
     # If no arguments or help requested, show commands guide
     if len(vars(args)) == 0 or args.help or not args.logfile:
-        print("\nLogSentinel Commands Guide:\n")
+        print("\nLogRisk Commands Guide:\n")
         print("Basic Usage:")
         print("  logrisk -L <logfile> [options]\n")
         print("Scan Types (choose one):")
@@ -165,3 +165,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
