@@ -142,10 +142,10 @@ def main():
         rules_file = "windows_security_rules.json"
         scan_type = "Windows-Security"
     elif args.w_system:
-        rules_file = "windows_system.json"
+        rules_file = "windows_system_rules.json"
         scan_type = "Windows-System"
     elif args.w_application:
-        rules_file = "windows_application.json"
+        rules_file = "windows_application_rules.json"
         scan_type = "Windows-Application"
     else:
         print("Error: Please specify a scan type (--linux, --w-security, --w-system, --w-application)")
@@ -165,4 +165,5 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
