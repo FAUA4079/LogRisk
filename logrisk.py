@@ -5,21 +5,16 @@ import json
 import logging
 import re
 import shutil
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 import sys
 from math import ceil
 
-# -------------------------
-# JSON helpers (define before module-level loads)
-# -------------------------
+# JSON helpers
 
 def load_json_file(path, default=None):
     """
-    Load a JSON file from a Path or string path.
-
-    - If the file does not exist, returns `default` (or empty list if default is None).
-    - Prints a warning or error message on failure (simple legacy-friendly behavior).
+    Load JSON from Path or string. If missing or parse error, return default.
     """
     if default is None:
         default = []
@@ -32,23 +27,18 @@ def load_json_file(path, default=None):
             with p.open('r', encoding='utf-8') as f:
                 return json.load(f)
         except Exception as e:
-            print(f"[ERROR] Failed to load {p}: {e}")
+            logging.warning("Failed to load JSON %s: %s", p, e)
             return default
     else:
-        # Don't spam warning for optional files on import in automated runs; keep helpful but concise
-        # print(f"[WARNING] {p} not found, using default.")
         return default
-
 
 def save_json_file(path: Path, data):
     path.parent.mkdir(parents=True, exist_ok=True)
     with path.open('w', encoding='utf-8') as f:
         json.dump(data, f, ensure_ascii=False, indent=2)
 
-
-# -------------------------
 # Default sample data (used only if controls files missing)
-# -------------------------
+
 SAMPLE_CONTROLS = [
     {
         "control_id": "CTRL-AC-001",
@@ -83,15 +73,26 @@ SAMPLE_HYBRID_MAPPING = [
     {"control_id": "CTRL-AUTH-002", "iso": "A.9", "nist": "PR.AC-3", "cis": "CIS 6"}
 ]
 
-# -------------------------
-# Legacy/compat: load root-level GRC JSON files so other scripts can import them
-# These are loaded at module import time and fall back to SAMPLE_* if files are missing.
+# Optional legacy-level loads (if users want to import these at module import time)
 CONTROLS_LIBRARY = load_json_file('controls_library.json', SAMPLE_CONTROLS)
 HYBRID_MAPPING = load_json_file('hybrid_mapping.json', SAMPLE_HYBRID_MAPPING)
 
-# -------------------------
+# Utilities
+
+def safe_name(value: str) -> str:
+    """Return a filesystem-safe short name for folder names."""
+    s = str(value or "")
+    # replace problematic characters, limit length
+    for ch in ('/', '\\', ':', '*', '?', '"', '<', '>', '|'):
+        s = s.replace(ch, '_')
+    s = s.replace(' ', '_')
+    return s[:80]
+
+def iso_now():
+    """Return timezone-aware ISO timestamp."""
+    return datetime.now(timezone.utc).astimezone().isoformat()
+
 # Rule compilation and scanning
-# -------------------------
 
 def compile_rules(rules, ignore_case=False):
     compiled = []
@@ -103,13 +104,12 @@ def compile_rules(rules, ignore_case=False):
         try:
             cre = re.compile(patt, flags)
         except re.error as e:
-            logging.warning('Invalid regex for rule %s: %s. Skipping.', r.get('id'), e)
+            logging.warning("Invalid regex for rule %s: %s. Skipping.", r.get('id'), e)
             continue
         r_copy = dict(r)
         r_copy['_compiled'] = cre
         compiled.append(r_copy)
     return compiled
-
 
 def scan_log_stream(log_file: Path, compiled_rules, verbose=False, context=0):
     matches = []
@@ -117,13 +117,16 @@ def scan_log_stream(log_file: Path, compiled_rules, verbose=False, context=0):
         from collections import deque
         prev_lines = deque(maxlen=context)
     with log_file.open('r', encoding='utf-8', errors='replace') as f:
-        for lineno, line in enumerate(f, start=1):
+        for lineno, raw_line in enumerate(f, start=1):
+            line = raw_line.rstrip('\n')
             if context > 0:
+                matched = False
                 for rule in compiled_rules:
                     if rule['_compiled'].search(line):
+                        # capture context
                         snippet = {
                             'before': list(prev_lines),
-                            'match_line': line.rstrip('\n'),
+                            'match_line': line,
                             'after': []
                         }
                         after = []
@@ -136,29 +139,30 @@ def scan_log_stream(log_file: Path, compiled_rules, verbose=False, context=0):
                         snippet['after'] = after
                         match = {
                             'line_no': lineno - len(after),
-                            'line_content': line.rstrip('\n'),
+                            'line_content': line,
                             'id': rule.get('id', ''),
                             'risk': rule.get('name', ''),
                             'weight': rule.get('weight', 0),
                             'level': predict_risk_level(rule.get('weight', 0)),
                             'suggested_fix': rule.get('suggested_treatment', ''),
                             'category': rule.get('category', ''),
-                            'rule': rule
+                            'rule': rule,
+                            'context': snippet
                         }
-                        match['context'] = snippet
                         matches.append(match)
                         if verbose:
-                            logging.info('[%s] %s - line %d', match['level'], match['risk'], match['line_no'])
+                            logging.info("[%s] %s - line %d", match['level'], match['risk'], match['line_no'])
                         prev_lines.clear()
+                        matched = True
                         break
-                else:
-                    prev_lines.append(line.rstrip('\n'))
+                if not matched:
+                    prev_lines.append(line)
             else:
                 for rule in compiled_rules:
                     if rule['_compiled'].search(line):
                         match = {
                             'line_no': lineno,
-                            'line_content': line.rstrip('\n'),
+                            'line_content': line,
                             'id': rule.get('id', ''),
                             'risk': rule.get('name', ''),
                             'weight': rule.get('weight', 0),
@@ -169,14 +173,11 @@ def scan_log_stream(log_file: Path, compiled_rules, verbose=False, context=0):
                         }
                         matches.append(match)
                         if verbose:
-                            logging.info('[%s] %s - line %d', match['level'], match['risk'], match['line_no'])
+                            logging.info("[%s] %s - line %d", match['level'], match['risk'], match['line_no'])
                         break
     return matches
 
-
-# -------------------------
 # Risk & control functions
-# -------------------------
 
 def predict_risk_level(weight):
     try:
@@ -189,19 +190,18 @@ def predict_risk_level(weight):
         return 'Medium'
     return 'Low'
 
-
 def find_control_for_rule(rule, controls, hybrid_map):
     # 1) direct mapping by control_id in rule
     if rule.get('control_id'):
         for c in controls:
             if c.get('control_id') == rule.get('control_id'):
                 return c
-    # 2) mapping by hybrid_map entries
+    # 2) hybrid mapping lookup
     for entry in hybrid_map:
         cid = entry.get('control_id')
         for c in controls:
             if c.get('control_id') == cid:
-                # simple heuristics
+                # quick heuristics
                 if rule.get('category') and rule.get('category').lower() in (c.get('name','') or '').lower():
                     return c
                 if any(tok.lower() in (c.get('name','') or '').lower() for tok in (rule.get('name','') or '').split()):
@@ -210,12 +210,9 @@ def find_control_for_rule(rule, controls, hybrid_map):
     for c in controls:
         if c.get('asset_tag') and c.get('asset_tag') == rule.get('category'):
             return c
-    # 4) last resort: return None
     return None
 
-
 def compute_risk_score_for_match(match, control):
-    # risk = asset_value * threat_likelihood * inverse_effectiveness
     try:
         weight = int(match.get('weight', 0))
     except Exception:
@@ -235,7 +232,6 @@ def compute_risk_score_for_match(match, control):
     effectiveness_inverse = max(1, 6 - control_effectiveness)
     risk_score = asset_value * threat_likelihood * effectiveness_inverse
     return risk_score
-
 
 def update_controls_with_matches(controls, matches, hybrid_map, run_folder: Path):
     for m in matches:
@@ -257,7 +253,7 @@ def update_controls_with_matches(controls, matches, hybrid_map, run_folder: Path
             }
             controls.append(control)
         evidence = {
-            'detected_at': datetime.utcnow().isoformat() + 'Z',
+            'detected_at': iso_now(),
             'log_line_no': m.get('line_no'),
             'log_snippet': m.get('line_content'),
             'rule_id': rule.get('id')
@@ -265,25 +261,23 @@ def update_controls_with_matches(controls, matches, hybrid_map, run_folder: Path
         control.setdefault('implementation_evidence', []).append(evidence)
         if control.get('status') == 'Not Implemented':
             control['status'] = 'Partial'
-        safe_name = f"{control.get('control_id')}_{(control.get('name') or '').replace(' ','_')[:40]}"
-        folder = run_folder / safe_name
-        folder.mkdir(exist_ok=True)
+        safe = safe_name(f"{control.get('control_id')}_{control.get('name')}")
+        folder = run_folder / safe
+        folder.mkdir(parents=True, exist_ok=True)
         with (folder / 'evidence.json').open('a', encoding='utf-8') as f:
             f.write(json.dumps(evidence, ensure_ascii=False) + '\n')
     return controls
 
-
 def save_controls_status(controls, run_folder: Path):
-    path = run_folder / 'controls_status.json'
-    with path.open('w', encoding='utf-8') as f:
-        json.dump(controls, f, ensure_ascii=False, indent=2)
+    save_json_file(run_folder / 'controls_status.json', controls)
 
-
-# -------------------------
 # Reporting
-# -------------------------
 
 def save_reports(matches, output_name: str, run_folder: Path, log_file: Path, json_report=False):
+    # ensure run folder exists
+    run_folder.mkdir(parents=True, exist_ok=True)
+
+    # text report
     text_path = run_folder / output_name
     with text_path.open('w', encoding='utf-8') as f:
         if not matches:
@@ -306,59 +300,56 @@ def save_reports(matches, output_name: str, run_folder: Path, log_file: Path, js
                         f.write(f"  {ln}\n")
             f.write('-' * 50 + '\n')
 
+    # json report
     if json_report:
         json_path = run_folder / 'predicted_risks.json'
-        out = {
-            'generated_at': datetime.utcnow().isoformat() + 'Z',
-            'log_file': str(log_file),
-            'num_matches': len(matches),
-            'matches': matches
-        }
         with json_path.open('w', encoding='utf-8') as f:
-            json.dump(out, f, ensure_ascii=False, indent=2)
+            json.dump({
+                'generated_at': iso_now(),
+                'log_file': str(log_file),
+                'num_matches': len(matches),
+                'matches': matches
+            }, f, ensure_ascii=False, indent=2)
 
+    # copy original log file
     try:
         shutil.copy(log_file, run_folder / log_file.name)
     except Exception:
-        logging.warning('Failed to copy log file to run folder')
+        logging.warning("Failed to copy log file to run folder")
 
-    logging.info('All outputs saved in folder: %s', run_folder)
+    logging.info("All outputs saved in folder: %s", run_folder)
 
-
-# -------------------------
-# Utilities
-# -------------------------
+# Create timestamp folder
 
 def create_results_folder(base_dir: Path, scan_type: str):
     base_folder = base_dir / scan_type
     base_folder.mkdir(parents=True, exist_ok=True)
-    timestamp = datetime.now().strftime('%Y-%m-%dT%H-%M-%S')
+    # timestamp safe for filenames (no colons)
+    timestamp = datetime.now().strftime("%Y-%m-%d_T%H-%M-%S")
     run_folder = base_folder / timestamp
-    run_folder.mkdir(exist_ok=False)
+    # ensure unique run folder; fail if exists to avoid accidental overwrite
+    run_folder.mkdir(parents=True, exist_ok=False)
     return run_folder
 
-
-# -------------------------
 # Main
-# -------------------------
 
 def main(argv=None):
-    parser = argparse.ArgumentParser(description='LogRisk - OS Log Risk Analysis Tool (with external GRC files)')
-    parser.add_argument('-L', '--logfile', required=True, help='Path to log file to scan')
-    parser.add_argument('-O', '--output-name', default='report.txt', help='Name of text report file')
-    parser.add_argument('--output-dir', default='Results_output', help='Base directory for results')
-    parser.add_argument('--json-report', action='store_true', help='Generate JSON report')
-    parser.add_argument('-v', '--verbose', action='store_true', help='Verbose output (info)')
-    parser.add_argument('--context', type=int, default=0, help='Number of context lines before/after a match')
-    parser.add_argument('--ignore-case', action='store_true', help='Make rule matching case-insensitive')
-    group = parser.add_mutually_exclusive_group(required=False)
-    group.add_argument('--linux', action='store_true', help='Scan Linux log file')
-    group.add_argument('--w-security', action='store_true', help='Scan Windows Security log')
-    group.add_argument('--w-system', action='store_true', help='Scan Windows System log')
-    group.add_argument('--w-application', action='store_true', help='Scan Windows Application log')
-    parser.add_argument('--rules-file', default=None, help='Path to JSON rules file (optional)')
-    parser.add_argument('--enable-grc', action='store_true', help='Enable GRC integration (controls library, mapping, scoring)')
-    parser.add_argument('--controls-dir', default='grc', help='Directory to store controls and mapping files')
+    parser = argparse.ArgumentParser(description='LogRisk - OS Log Risk Analysis Tool (timestamped folders)')
+    parser.add_argument('-L','--logfile',required=True,help='Path to log file to scan')
+    parser.add_argument('-O','--output-name',default='report.txt',help='Name of text report file')
+    parser.add_argument('--output-dir',default='Results',help='Base directory for results')
+    parser.add_argument('--json-report',action='store_true',help='Generate JSON report')
+    parser.add_argument('-v','--verbose',action='store_true',help='Verbose output (info)')
+    parser.add_argument('--context',type=int,default=0,help='Number of context lines before/after a match')
+    parser.add_argument('--ignore-case',action='store_true',help='Case-insensitive matching')
+    group = parser.add_mutually_exclusive_group()
+    group.add_argument('--linux',action='store_true',help='Scan Linux log file')
+    group.add_argument('--w-security',action='store_true',help='Scan Windows Security log')
+    group.add_argument('--w-system',action='store_true',help='Scan Windows System log')
+    group.add_argument('--w-application',action='store_true',help='Scan Windows Application log')
+    parser.add_argument('--rules-file',default=None,help='Optional JSON rules file')
+    parser.add_argument('--enable-grc',action='store_true',help='Enable GRC integration')
+    parser.add_argument('--controls-dir',default='grc',help='Directory to store controls & mapping')
     args = parser.parse_args(argv)
 
     level = logging.INFO if args.verbose else logging.WARNING
@@ -366,7 +357,7 @@ def main(argv=None):
 
     log_path = Path(args.logfile)
     if not log_path.exists():
-        logging.error('Error: Log file does not exist: %s', log_path)
+        logging.error('Log file does not exist: %s', log_path)
         sys.exit(2)
 
     # Determine rules file
@@ -397,27 +388,34 @@ def main(argv=None):
     scan_type = ('Linux' if args.linux else
                  'Windows-Security' if args.w_security else
                  'Windows-System' if args.w_system else
-                 'Windows-Application')
-    if scan_type == '':
-        scan_type = 'Generic'
+                 'Windows-Application' if args.w_application else 'Generic')
 
     base_out_dir = Path(args.output_dir)
-    run_folder = create_results_folder(base_out_dir, scan_type)
+    try:
+        run_folder = create_results_folder(base_out_dir, scan_type)
+    except FileExistsError:
+        # extremely unlikely because timestamp includes seconds; but handle gracefully
+        logging.warning("Run folder collision detected; creating a unique fallback.")
+        run_folder = base_out_dir / scan_type / (datetime.now().strftime("%Y-%m-%d_T%H-%M-%S_%f"))
+        run_folder.mkdir(parents=True, exist_ok=True)
 
-    # Load or create controls & mapping
+    logging.info('Starting scan of %s using rules from %s', log_path, rules_file)
+    matches = scan_log_stream(log_path, compiled_rules, verbose=args.verbose, context=args.context)
+
+    # GRC integration
     controls = []
     hybrid_map = []
-    if args.enable-grc:
+    if args.enable_grc:
         controls_dir = Path(args.controls_dir)
         controls_dir.mkdir(parents=True, exist_ok=True)
         controls_file = controls_dir / 'controls_library.json'
         mapping_file = controls_dir / 'hybrid_mapping.json'
-        # If not present in controls_dir, also check root for backward compatibility
+        # fallback to root-level files if present
         if not controls_file.exists() and Path('controls_library.json').exists():
             controls_file = Path('controls_library.json')
         if not mapping_file.exists() and Path('hybrid_mapping.json').exists():
             mapping_file = Path('hybrid_mapping.json')
-        # If still not exists, create sample ones inside controls_dir
+        # create samples in controls_dir if missing
         if not controls_file.exists():
             save_json_file(controls_dir / 'controls_library.json', SAMPLE_CONTROLS)
             controls_file = controls_dir / 'controls_library.json'
@@ -426,19 +424,19 @@ def main(argv=None):
             mapping_file = controls_dir / 'hybrid_mapping.json'
         controls = load_json_file(controls_file, default=SAMPLE_CONTROLS)
         hybrid_map = load_json_file(mapping_file, default=SAMPLE_HYBRID_MAPPING)
-        logging.info('Loaded %d controls and %d hybrid mappings', len(controls), len(hybrid_map))
+        logging.info("Loaded %d controls and %d hybrid mappings", len(controls), len(hybrid_map))
 
-    logging.info('Starting scan of %s using rules from %s', log_path, rules_file)
-    matches = scan_log_stream(log_path, compiled_rules, verbose=args.verbose, context=args.context)
-
-    if args.enable-grc:
+        # attach matches to controls and write evidence
         controls = update_controls_with_matches(controls, matches, hybrid_map, run_folder)
+
+        # compute risk scores and add control_id in matches
         for m in matches:
             ctrl = find_control_for_rule(m.get('rule', {}), controls, hybrid_map)
-            score = compute_risk_score_for_match(m, ctrl)
-            m['risk_score'] = score
+            m['risk_score'] = compute_risk_score_for_match(m, ctrl)
             if ctrl:
                 m['control_id'] = ctrl.get('control_id')
+
+        # persist controls status and CSV summary
         save_controls_status(controls, run_folder)
         summary_csv = run_folder / 'risk_summary.csv'
         with summary_csv.open('w', encoding='utf-8') as f:
@@ -446,13 +444,13 @@ def main(argv=None):
             for m in matches:
                 f.write(f"{m.get('control_id','')},{m.get('id')},{m.get('risk')},{m.get('level')},{m.get('risk_score',0)},{m.get('line_no')}\n")
 
+    # Save reports and copy log
     save_reports(matches, args.output_name, run_folder, log_path, json_report=args.json_report)
 
-    print(f'Hello Fuad Hasan sir — Updated project saved. Results in: {run_folder}')
-    if args.enable-grc:
-        print(f'Controls status: {run_folder / "controls_status.json"}')
-        print(f'Risk summary CSV: {run_folder / "risk_summary.csv"}')
-
+    print(f"Hello Fuad Hasan sir — Results saved in: {run_folder}")
+    if args.enable_grc:
+        print(f"Controls status: {run_folder / 'controls_status.json'}")
+        print(f"Risk summary CSV: {run_folder / 'risk_summary.csv'}")
 
 if __name__ == '__main__':
     main()
