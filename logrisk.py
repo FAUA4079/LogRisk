@@ -5,13 +5,15 @@ import argparse
 import re
 from datetime import datetime
 import shutil
+import subprocess
+import sys
 
 # ============================================================
-# Existing Helper Functions (No Change)
+# Helper Functions (context extraction, reporting, etc.)
 # ============================================================
 
 def load_risk_rules(file_path):
-    with open(file_path, 'r') as f:
+    with open(file_path, 'r', encoding='utf-8') as f:
         return json.load(f)
 
 def create_results_folder(scan_type):
@@ -24,63 +26,106 @@ def create_results_folder(scan_type):
     return run_folder
 
 def predict_risk_level(weight):
-    if weight >= 7: return "High"
-    elif weight >= 4: return "Medium"
+    if weight >= 7:
+        return "High."
+    elif weight >= 4:
+        return "Medium."
     return "Low"
 
-def scan_log(log_file, rules, verbose=False):
+def scan_log(log_file, rules, context_lines=5, verbose=False):
+    """
+    Scan the given log_file for rule patterns.
+    Return matches with context_lines before and after each match.
+    """
     matches = []
-    with open(log_file, 'r') as f:
+    with open(log_file, 'r', errors='replace', encoding='utf-8') as f:
         lines = f.readlines()
 
+    total_lines = len(lines)
     for i, line in enumerate(lines):
         for rule in rules:
-            if re.search(rule['pattern'], line):
-                matches.append({
-                    "line_no": i+1,
-                    "line_content": line.strip(),
-                    "id": rule['id'],
-                    "risk": rule['name'],
-                    "weight": rule['weight'],
-                    "level": predict_risk_level(rule['weight']),
-                    "suggested_fix": rule['suggested_treatment'],
-                    "category": rule['category']
-                })
+            try:
+                if re.search(rule.get('pattern', ''), line):
+                    start = max(0, i - context_lines)
+                    end = min(total_lines, i + context_lines + 1)  # exclusive
+                    context = []
+                    for idx in range(start, end):
+                        context.append({
+                            "line_no": idx + 1,
+                            "line": lines[idx].rstrip("\n")
+                        })
+
+                    matches.append({
+                        "line_no": i + 1,
+                        "line_content": line.strip(),
+                        "id": rule.get('id'),
+                        "risk": rule.get('name'),
+                        "weight": rule.get('weight'),
+                        "level": predict_risk_level(rule.get('weight', 0)),
+                        "suggested_fix": rule.get('suggested_treatment'),
+                        "category": rule.get('category'),
+                        "context": context
+                    })
+            except re.error:
+                if verbose:
+                    print(f"Invalid regex for rule id {rule.get('id')}: {rule.get('pattern')}")
+                continue
     return matches
 
 def save_reports(matches, output_name, run_folder, log_file, json_report=False):
     report_path = os.path.join(run_folder, output_name)
 
-    with open(report_path, "w") as f:
-        for m in matches:
-            f.write(f"Risk: {m['risk']}\n")
-            f.write(f"Level: {m['level']}\n")
-            f.write(f"Fix: {m['suggested_fix']}\n")
-            f.write(f"Log Line: {m['line_content']}\n")
-            f.write("-"*50 + "\n")
+    with open(report_path, "w", encoding='utf-8') as f:
+        if not matches:
+            f.write("No risks found.\n")
+        else:
+            for m in matches:
+                f.write(f"Risk: {m.get('risk')}\n")
+                f.write(f"Level: {m.get('level')}\n")
+                f.write(f"Fix: {m.get('suggested_fix')}\n")
+                f.write(f"Log Line (#{m.get('line_no')}): {m.get('line_content')}\n")
+                f.write("Context (5 lines before and after):\n")
+                for c in m.get('context', []):
+                    prefix = ">>" if c['line_no'] == m.get('line_no') else "  "
+                    f.write(f"{prefix} {c['line_no']:5d}: {c['line']}\n")
+                f.write("-" * 70 + "\n")
 
     if json_report:
         json_path = os.path.join(run_folder, "predicted_risks.json")
-        with open(json_path, "w") as jf:
-            json.dump(matches, jf, indent=4)
+        with open(json_path, "w", encoding='utf-8') as jf:
+            json.dump(matches, jf, indent=4, ensure_ascii=False)
 
-    shutil.copy(log_file, os.path.join(run_folder, os.path.basename(log_file)))
+    # Copy the original log file into results folder for auditing
+    try:
+        shutil.copy(log_file, os.path.join(run_folder, os.path.basename(log_file)))
+    except Exception as e:
+        print(f"[!] Warning: could not copy log file to results folder: {e}")
 
 # ============================================================
-# Interactive Shell (Metasploit Style)
+# Interactive Shell (tools interface optional)
 # ============================================================
 
 class LogRiskShell:
-    def __init__(self):
+    def __init__(self, show_tools=True):
         self.module = None
         self.options = {"logfile": None, "json_report": False, "output": "report.txt"}
+        self.show_tools = show_tools
 
     def start(self):
         print("\nLogRisk Analyzer Framework v1.0")
+        if self.show_tools:
+            print("Tip: type 'tools' to list/enter external tools (msfconsole, nmap, etc.).")
         print("Type 'help' for available commands.\n")
 
         while True:
-            cmd = input(f"logrisk{f'({self.module})' if self.module else ''} > ").strip()
+            try:
+                cmd = input(f"logrisk{f'({self.module})' if self.module else ''} > ").strip()
+            except (EOFError, KeyboardInterrupt):
+                print("\nExiting LogRisk...")
+                break
+
+            if not cmd:
+                continue
 
             if cmd == "exit":
                 print("Exiting LogRisk...")
@@ -90,7 +135,7 @@ class LogRiskShell:
                 self.show_help()
 
             elif cmd.startswith("use "):
-                self.select_module(cmd.split(" ")[1])
+                self.select_module(cmd.split(" ", 1)[1].strip())
 
             elif cmd.startswith("set "):
                 self.set_option(cmd)
@@ -100,6 +145,18 @@ class LogRiskShell:
 
             elif cmd == "back":
                 self.module = None
+
+            elif cmd == "tools":
+                if not self.show_tools:
+                    print("Tools interface is hidden. Restart with tools enabled.")
+                else:
+                    self.show_tools_list()
+
+            elif cmd.startswith("tools "):
+                if not self.show_tools:
+                    print("Tools interface is hidden. Restart with tools enabled.")
+                else:
+                    self.handle_tools_command(cmd.split(" ", 1)[1].strip())
 
             else:
                 print("Unknown command. Type 'help' for available commands.")
@@ -125,6 +182,10 @@ Options:
 
 Actions:
   run                 Run the scan
+
+Tools (if enabled):
+  tools               Show available external tools
+  tools use <name>    Launch the named tool (if installed), e.g. 'tools use msf'
 """)
 
     # ---------------------------------------------------------
@@ -145,12 +206,15 @@ Actions:
                 return
 
             if key == "json_report":
-                value = value.lower() == "true"
+                value_bool = value.lower() == "true"
+                self.options[key] = value_bool
+                print(f"{key} set to: {value_bool}")
+                return
 
             self.options[key] = value
             print(f"{key} set to: {value}")
 
-        except:
+        except ValueError:
             print("Usage: set <option> <value>")
 
     # ---------------------------------------------------------
@@ -171,15 +235,15 @@ Actions:
             "w-application": "windows_application_rules.json"
         }
 
-        rules_file = rule_map[self.module]
-        if not os.path.exists(rules_file):
+        rules_file = rule_map.get(self.module)
+        if not rules_file or not os.path.exists(rules_file):
             print(f"Rules file missing: {rules_file}")
             return
 
         print(f"[+] Running {self.module} scan...")
 
         rules = load_risk_rules(rules_file)
-        matches = scan_log(logfile, rules)
+        matches = scan_log(logfile, rules, context_lines=5)
 
         run_folder = create_results_folder(self.module.capitalize())
         save_reports(matches, self.options["output"], run_folder, logfile,
@@ -188,21 +252,66 @@ Actions:
         print(f"[+] Scan complete. Risks found: {len(matches)}")
         print(f"[+] Report saved: {os.path.join(run_folder, self.options['output'])}")
 
+    # ---------------------------------------------------------
+    # Tools interface
+    def show_tools_list(self):
+        tools = {
+            "msf": {"exe": "msfconsole", "desc": "Metasploit Framework console"},
+            "nmap": {"exe": "nmap", "desc": "Network mapper"},
+            "tcpdump": {"exe": "tcpdump", "desc": "Network packet capture tool"},
+            "netcat": {"exe": "nc", "desc": "Netcat (may be 'nc' or 'ncat')"}
+        }
+        print("Available tools (attempt will be made to run them):")
+        for name, info in tools.items():
+            print(f"  {name:6} - {info['desc']} (exe: {info['exe']})")
+        print("Use: tools use <name>  e.g.  tools use msf")
+
+    def handle_tools_command(self, subcmd):
+        if subcmd.startswith("use "):
+            tool = subcmd.split(" ", 1)[1].strip()
+            self.launch_tool(tool)
+        else:
+            print("tools subcommand not recognized. Try 'tools use <name>'.")
+
+    def launch_tool(self, tool_name):
+        tool_map = {
+            "msf": ["msfconsole"],
+            "msfconsole": ["msfconsole"],
+            "nmap": ["nmap", "-h"],
+            "tcpdump": ["tcpdump", "--help"],
+            "netcat": ["nc", "-h"]
+        }
+
+        cmd = tool_map.get(tool_name)
+        if not cmd:
+            print(f"Unknown tool: {tool_name}")
+            return
+
+        print(f"[+] Attempting to launch: {' '.join(cmd)}")
+        try:
+            subprocess.call(cmd)
+        except FileNotFoundError:
+            print(f"[!] Tool not found on PATH: {cmd[0]}")
+        except KeyboardInterrupt:
+            print("\n[!] Tool interrupted by user.")
+        except Exception as e:
+            print(f"[!] Failed to launch tool {tool_name}: {e}")
 
 # ============================================================
 # Entry Point
 # ============================================================
 
 def main():
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--interactive", action="store_true")
+    parser = argparse.ArgumentParser(
+        description="LogRisk - interactive log risk scanner. Default: launch interactive shell."
+    )
+    parser.add_argument("-i", "--ignore-tools", action="store_true",
+                        help="Hide tools interface and enter interactive shell directly")
     args = parser.parse_args()
 
-    if args.interactive:
-        shell = LogRiskShell()
-        shell.start()
-    else:
-        print("Run interactive mode using:\n  logrisk --interactive")
+    # Default behavior: start interactive shell.
+    shell = LogRiskShell(show_tools=not args.ignore_tools)
+    shell.start()
 
 if __name__ == "__main__":
     main()
