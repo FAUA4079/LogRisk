@@ -7,6 +7,21 @@ from datetime import datetime
 import shutil
 import subprocess
 import sys
+import atexit
+
+# Optional readline for command history (Up/Down navigation)
+readline = None
+history_file = os.path.expanduser("~/.logrisk_history")
+try:
+    import readline as rl
+    readline = rl
+except Exception:
+    # Try pyreadline on Windows
+    try:
+        import pyreadline as rl
+        readline = rl
+    except Exception:
+        readline = None
 
 # ============================================================
 # Helper Functions (context extraction, reporting, etc.)
@@ -102,19 +117,52 @@ def save_reports(matches, output_name, run_folder, log_file, json_report=False):
         print(f"[!] Warning: could not copy log file to results folder: {e}")
 
 # ============================================================
-# Interactive Shell (tools interface optional)
+# Interactive Shell (tools interface optional + history)
 # ============================================================
 
 class LogRiskShell:
     def __init__(self, show_tools=True):
         self.module = None
+        # core options (these are shown by 'show options')
         self.options = {"logfile": None, "json_report": False, "output": "report.txt"}
         self.show_tools = show_tools
+
+        # module -> rules mapping (useful for show options display)
+        self.rule_map = {
+            "linux": "linux_rules.json",
+            "w-security": "windows_security_rules.json",
+            "w-system": "windows_system_rules.json",
+            "w-application": "windows_application_rules.json"
+        }
+
+        # Setup readline history if available
+        if readline:
+            try:
+                # Load history file if present
+                if os.path.exists(history_file):
+                    readline.read_history_file(history_file)
+                readline.set_history_length(1000)
+            except Exception:
+                # non-fatal; continue without history persistence
+                pass
+
+            # Register save on exit
+            def _save_hist():
+                try:
+                    readline.write_history_file(history_file)
+                except Exception:
+                    pass
+            atexit.register(_save_hist)
+        else:
+            # If readline not available, notify once
+            self._readline_missing_warned = False
 
     def start(self):
         print("\nLogRisk Analyzer Framework v1.0")
         if self.show_tools:
             print("Tip: type 'tools' to list/enter external tools (msfconsole, nmap, etc.).")
+        if not readline:
+            print("[!] Note: command history (Up/Down arrows) is not available because 'readline' is missing.")
         print("Type 'help' for available commands.\n")
 
         while True:
@@ -127,12 +175,22 @@ class LogRiskShell:
             if not cmd:
                 continue
 
+            # Add to history explicitly if readline present (usually already added).
+            if readline:
+                try:
+                    readline.add_history(cmd)
+                except Exception:
+                    pass
+
             if cmd == "exit":
                 print("Exiting LogRisk...")
                 break
 
             elif cmd == "help":
                 self.show_help()
+
+            elif cmd == "show options":
+                self.show_options()
 
             elif cmd.startswith("use "):
                 self.select_module(cmd.split(" ", 1)[1].strip())
@@ -174,6 +232,7 @@ Module Commands:
   use w-security      Use Windows Security scanner
   use w-system        Use Windows System scanner
   use w-application   Use Windows Application scanner
+  show options        Show current options for the selected module (or global options)
 
 Options:
   set logfile <path>        Set log file to scan
@@ -186,11 +245,31 @@ Actions:
 Tools (if enabled):
   tools               Show available external tools
   tools use <name>    Launch the named tool (if installed), e.g. 'tools use msf'
+
 """)
 
     # ---------------------------------------------------------
+    def show_options(self):
+        """
+        Display current options and module-specific info.
+        """
+        print("\n=== Current Options ===")
+        print(f"Selected module: {self.module if self.module else '(none)'}")
+        # show path to rules file if module selected
+        if self.module:
+            rules_file = self.rule_map.get(self.module)
+            print(f"Rules file: {rules_file if rules_file else '(unknown)'}")
+            print("Module-specific options: (none predefined)")
+        else:
+            print("No module selected. Use 'use <module>' to select one.")
+        print("\nGlobal options:")
+        for k, v in self.options.items():
+            print(f"  {k:12s} : {v}")
+        print("=======================\n")
+
+    # ---------------------------------------------------------
     def select_module(self, module_name):
-        modules = ["linux", "w-security", "w-system", "w-application"]
+        modules = list(self.rule_map.keys())
         if module_name not in modules:
             print("Invalid module.")
             return
@@ -228,14 +307,7 @@ Tools (if enabled):
             print("Error: logfile not set or does not exist.")
             return
 
-        rule_map = {
-            "linux": "linux_rules.json",
-            "w-security": "windows_security_rules.json",
-            "w-system": "windows_system_rules.json",
-            "w-application": "windows_application_rules.json"
-        }
-
-        rules_file = rule_map.get(self.module)
+        rules_file = self.rule_map.get(self.module)
         if not rules_file or not os.path.exists(rules_file):
             print(f"Rules file missing: {rules_file}")
             return
@@ -303,7 +375,7 @@ Tools (if enabled):
 
 def main():
     parser = argparse.ArgumentParser(
-        description="LogRisk - interactive log risk scanner. Default: launch interactive shell."
+        description="LogRisk - interactive log risk scanner."
     )
     parser.add_argument("-i", "--ignore-tools", action="store_true",
                         help="Hide tools interface and enter interactive shell directly")
